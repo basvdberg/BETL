@@ -25,6 +25,17 @@ Find more about BETL here: http://www.etlautomation.com.
   <li>BETL for Azure architecture</li>
   <li>Getting started</li>
 </ul>
+## What is BETL
+* Free, open source, GNU GPL
+* Meta data driven
+* Generic (usable in many different data warehousing scenarios)
+
+## What is BETL NOT
+* A modeling method (e.g. Datavault, Kimball or Anchor modeling)
+* A DWH architecture (e.g. staging-> raw dwh -> integrated dwh -> datamart ). 
+* dependent ( e.g. dependend on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
+* Restrictive ( all or nothing. You can choose which functionality you require in your project.)
+* Visual (currently it's only T-SQL. My next focus would be to build a meta data gui)
 
 ## Main reasons for using BETL
  * Improve your productivity. However you need to invest some time to get to know BETL. 
@@ -40,18 +51,6 @@ Find more about BETL here: http://www.etlautomation.com.
 ## Pre requisits for **contributing** to BETL
  * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
  * Knowledge of data warehousing best practices.
-
-## What is BETL
-* Free, open source, GNU GPL
-* Meta data driven
-* Generic (usable in many different data warehousing scenarios)
-
-## What is BETL NOT
-* A modeling method (e.g. Datavault, Kimball or Anchor modeling)
-* A DWH architecture (e.g. staging-> raw dwh -> integrated dwh -> datamart ). 
-* dependent ( e.g. dependend on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
-* Restrictive ( all or nothing. You can choose which functionality you require in your project.)
-* Visual (currently it's only T-SQL. My next focus would be to build a meta data gui)
 
 Previous BETL version : https://github.com/basvdberg/BETL
 The previous version of BETL was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
