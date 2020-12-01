@@ -26,18 +26,18 @@ Find more about BETL here: http://www.etlautomation.com.
   <li>Getting started</li>
 </ul>
 
-##The main reasons for using BETL are:
- * Improve your productivity considerably. However you need to invest some time to get to know BETL. 
+## Main reasons for using BETL
+ * Improve your productivity. However you need to invest some time to get to know BETL. 
  * Improve the quality of your ETL by seperating ##what to do## and ##how to do it##. 
  * Makes your work more fun. You will need to think about generic business rules and templates instead of implementing local ETL changes. 
  * It forces developers to folow certain design guidelines and best practices. E.g. naming conventions, change detection, logging, TSQL Batch insert performance, etc.
 
-##Pre requisits for ##using## BETL
+## Pre requisits for ##using## BETL
  * T-SQL intermediate level. 
  * Azure Data factory
  * [Handlebars template language](https://handlebarsjs.com/) 
   
-##Pre requisits for ##contributing## to BETL
+## Pre requisits for ##contributing## to BETL
  * T-SQL advanced level. Generate dynamic TSQL. stored procedures, functions, custom data types. 
 
 ## What is BETL
