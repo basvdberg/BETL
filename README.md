@@ -1,5 +1,5 @@
 # BETL for Azure
-BETL for Azure is a complete revision of BETL. BETL is an ETL Engine, which in my world is a synonym for ETL automation software, ETL generation tool/framework or data wahreouse automation software. 
+BETL for Azure is a complete revision of BETL. BETL is an ETL Engine, which in my world is a synonym for ETL automation software, ETL generation tool/framework or data warehouse automation software. 
 
 Nowadays everybody uses an ETL engine to <b>generate ETL by using meta data</b>. There are some commercial products like WhereScape, XpertBI, TimeXtender or I-Refactory, but I prefer to keep matters into my own hands and my experience is that commercial products don't give you the flexibility to build the ETL engine exactly how you want it. 
 
@@ -25,3 +25,4 @@ Let's start with some definitions:
 </ul>
 
 Previous BETL version : https://github.com/basvdberg/BETL
+The previous version of BETL was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
