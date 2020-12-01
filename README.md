@@ -32,13 +32,14 @@ Find more about BETL here: http://www.etlautomation.com.
  * Makes your work more fun. You will need to think about generic business rules and templates instead of implementing local ETL changes. 
  * It forces developers to folow certain design guidelines and best practices. E.g. naming conventions, change detection, logging, TSQL Batch insert performance, etc.
 
-## Pre requisits for ##using## BETL
+## Pre requisits for **using** BETL
  * T-SQL intermediate level. 
  * Azure Data factory
  * [Handlebars template language](https://handlebarsjs.com/) 
   
-## Pre requisits for ##contributing## to BETL
- * T-SQL advanced level. Generate dynamic TSQL. stored procedures, functions, custom data types. 
+## Pre requisits for **contributing** to BETL
+ * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
+ * Knowledge of data warehousing best practices.
 
 ## What is BETL
 * Free, open source, GNU GPL
