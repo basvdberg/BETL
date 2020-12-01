@@ -31,7 +31,7 @@ Find more about BETL here: http://www.etlautomation.com.
 * Meta data driven
 * Generic (usable in many different data warehousing scenarios)
 
-## What is BETL NOT
+## What is BETL not
 * A modeling method (e.g. Datavault, Kimball or Anchor modeling)
 * A DWH architecture (e.g. staging-> raw dwh -> integrated dwh -> datamart ). 
 * dependent ( e.g. dependend on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
@@ -53,5 +53,4 @@ Find more about BETL here: http://www.etlautomation.com.
  * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
  * Knowledge of data warehousing best practices.
 
-Previous BETL version : https://github.com/basvdberg/BETL
-The previous version of BETL was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
+The [previous version of BETL](https://github.com/basvdberg/BETL) was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
