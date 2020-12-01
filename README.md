@@ -5,5 +5,5 @@ Nowadays everybody uses an ETL engine to generate ETL by using meta data. There 
 BETL is licensed under the GNU GPL, so feel free to dive into the source code and make your own extensions. My hope is that by sharing this knowledge we can all benefit from each other. And perhaps someday I can sell myself as a betl consultant. 
 
 https://github.com/basvdberg/BETL
-BETL for Azure is made for Azure, but can also be modified for an on premise environment. However there is a T-SQL dependency, so other databases that Microsoft will be difficult. 
+BETL for Azure is made for Azure, but can also be modified for an on premise environment. However there is a T-SQL dependency, so other databases than Microsoft will be difficult. 
 
