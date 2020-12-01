@@ -25,6 +25,7 @@ Find more about BETL here: http://www.etlautomation.com.
   <li>BETL for Azure architecture</li>
   <li>Getting started</li>
 </ul>
+
 ## What is BETL
 * Free, open source, GNU GPL
 * Meta data driven
@@ -39,15 +40,15 @@ Find more about BETL here: http://www.etlautomation.com.
 
 ## Main reasons for using BETL
  * Improve your productivity. However you need to invest some time to get to know BETL. 
- * Improve the quality of your ETL by seperating ##what to do## and ##how to do it##. 
+ * Improve the quality of your ETL by seperating **what to do** and **how to do it**. 
  * Makes your work more fun. You will need to think about generic business rules and templates instead of implementing local ETL changes. 
  * It forces developers to folow certain design guidelines and best practices. E.g. naming conventions, change detection, logging, TSQL Batch insert performance, etc.
 
 ## Pre requisits for **using** BETL
  * T-SQL intermediate level. 
  * Azure Data factory
- * [Handlebars template language](https://handlebarsjs.com/) 
-  
+ * A general understanding of the [Handlebars template language](https://handlebarsjs.com/).
+ 
 ## Pre requisits for **contributing** to BETL
  * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
  * Knowledge of data warehousing best practices.
