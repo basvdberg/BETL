@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>sqldb_betl</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{e1d1bdfa-bbd4-4120-9822-116b6c94e19b}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.SqlAzureV12DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>sqldb_betl4Azure</RootNamespace>
+    <AssemblyName>sqldb_betl4Azure</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <GenerateCreateScript>True</GenerateCreateScript>
+    <ValidateCasingOnIdentifiers>False</ValidateCasingOnIdentifiers>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <SuppressTSqlWarnings>71502;71558</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Ontwikkel|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <SuppressTSqlWarnings>SQL71502;SQL71558;SQL71558;SQL71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Test|AnyCPU' ">
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <SuppressTSqlWarnings>SQL71502;SQL71558;SQL71558;SQL71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Acceptatie|AnyCPU' ">
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <SuppressTSqlWarnings>SQL71502;SQL71558;SQL71558;SQL71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Productie|AnyCPU' ">
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <SuppressTSqlWarnings>SQL71502;SQL71558;SQL71558;SQL71502</SuppressTSqlWarnings>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="data" />
+    <Folder Include="data\betl" />
+    <Folder Include="dbo\" />
+    <Folder Include="dbo\Tables\" />
+    <Folder Include="static\" />
+    <Folder Include="static\Tables\" />
+    <Folder Include="dbo\Views\" />
+    <Folder Include="dbo\Functions\" />
+    <Folder Include="util\" />
+    <Folder Include="util\Functions\" />
+    <Folder Include="dbo\Stored Procedures\" />
+    <Folder Include="util\Stored Procedures\" />
+    <Folder Include="dbo\User Defined Types\" />
+    <Folder Include="security" />
+    <Folder Include="dbo\Sequences\" />
+    <Folder Include="static\Views\" />
+    <Folder Include="data\customer" />
+    <Folder Include="script" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\Tables\Transfer.sql" />
+    <Build Include="dbo\Tables\Stack.sql" />
+    <Build Include="dbo\Tables\Property_value.sql" />
+    <Build Include="dbo\Tables\Prefix.sql" />
+    <Build Include="dbo\Tables\Obj_dep.sql" />
+    <Build Include="dbo\Tables\Obj.sql" />
+    <Build Include="dbo\Tables\Logging.sql" />
+    <Build Include="dbo\Tables\Key_domain.sql" />
+    <Build Include="dbo\Tables\Job_step.sql" />
+    <Build Include="dbo\Tables\Job_schedule.sql" />
+    <Build Include="dbo\Tables\Job.sql" />
+    <Build Include="dbo\Tables\Error.sql" />
+    <Build Include="dbo\Tables\Cache_user_data.sql" />
+    <Build Include="dbo\Tables\Batch.sql" />
+    <Build Include="static\Tables\Version.sql" />
+    <Build Include="static\Tables\Template.sql" />
+    <Build Include="static\Tables\Status.sql" />
+    <Build Include="static\Tables\Server_type.sql" />
+    <Build Include="static\Tables\Property.sql" />
+    <Build Include="static\Tables\Obj_type.sql" />
+    <Build Include="static\Tables\Log_type.sql" />
+    <Build Include="static\Tables\Log_level.sql" />
+    <Build Include="static\Tables\Dep_type.sql" />
+    <Build Include="static\Tables\Column_type.sql" />
+    <Build Include="static\Tables\Column.sql" />
+    <Build Include="dbo\Views\Transfer_ext.sql" />
+    <Build Include="dbo\Views\Prop_ext.sql" />
+    <Build Include="dbo\Views\Obj_transfer.sql" />
+    <Build Include="dbo\Views\Obj_ext.sql" />
+    <Build Include="dbo\Views\Obj_dep_ext.sql" />
+    <Build Include="dbo\Views\Job_step_ext.sql" />
+    <Build Include="dbo\Views\Job_ext.sql" />
+    <Build Include="dbo\Views\Col_ext_unpivot.sql" />
+    <Build Include="dbo\Views\Col_ext.sql" />
+    <Build Include="dbo\Views\Col.sql" />
+    <Build Include="dbo\Views\Batch_ext.sql" />
+    <Build Include="dbo\Functions\schema_name.sql" />
+    <Build Include="dbo\Functions\schema_id.sql" />
+    <Build Include="dbo\Functions\obj_id.sql" />
+    <Build Include="dbo\Functions\get_prop_obj_id.sql" />
+    <Build Include="dbo\Functions\get_prop.sql" />
+    <Build Include="dbo\Functions\const.sql" />
+    <Build Include="dbo\Functions\column_type_name.sql" />
+    <Build Include="util\Functions\addQuotes.sql" />
+    <Build Include="util\Functions\filter_reg_exp.sql" />
+    <Build Include="util\Functions\Int2Char.sql" />
+    <Build Include="util\Functions\parent.sql" />
+    <Build Include="util\Functions\prefix.sql" />
+    <Build Include="util\Functions\prefix_first_underscore.sql" />
+    <Build Include="util\Functions\remove_comments.sql" />
+    <Build Include="util\Functions\suffix.sql" />
+    <Build Include="util\Functions\suffix_first_underscore.sql" />
+    <Build Include="util\Functions\trim.sql" />
+    <Build Include="util\Functions\udf_max.sql" />
+    <Build Include="util\Functions\udf_max3.sql" />
+    <Build Include="util\Functions\udf_min.sql" />
+    <Build Include="util\Functions\udf_min3.sql" />
+    <Build Include="util\Functions\filter.sql" />
+    <Build Include="util\Functions\obj_name.sql" />
+    <Build Include="util\Functions\split.sql" />
+    <Build Include="util\Functions\parse_sql.sql" />
+    <Build Include="dbo\Stored Procedures\verbose.sql" />
+    <Build Include="dbo\Stored Procedures\update_transfer.sql" />
+    <Build Include="dbo\Stored Procedures\top_sort_obj_dep_old.sql" />
+    <Build Include="dbo\Stored Procedures\top_sort_obj_dep.sql" />
+    <Build Include="dbo\Stored Procedures\start_transfer.sql" />
+    <Build Include="dbo\Stored Procedures\start_batch.sql" />
+    <Build Include="dbo\Stored Procedures\setp.sql" />
+    <Build Include="dbo\Stored Procedures\set_target_schema.sql" />
+    <Build Include="dbo\Stored Procedures\set_column_type.sql" />
+    <Build Include="dbo\Stored Procedures\reset.sql" />
+    <Build Include="dbo\Stored Procedures\process_stack_id.sql" />
+    <Build Include="dbo\Stored Procedures\process_stack.sql" />
+    <Build Include="dbo\Stored Procedures\parse_handlebars.sql" />
+    <Build Include="dbo\Stored Procedures\onError.sql" />
+    <Build Include="dbo\Stored Procedures\my_info.sql" />
+    <Build Include="dbo\Stored Procedures\log_error.sql" />
+    <Build Include="dbo\Stored Procedures\log_batch.sql" />
+    <Build Include="dbo\Stored Procedures\log.sql" />
+    <Build Include="dbo\Stored Procedures\ingest_obj_tree.sql" />
+    <Build Include="dbo\Stored Procedures\info.sql" />
+    <Build Include="dbo\Stored Procedures\inc_nesting.sql" />
+    <Build Include="dbo\Stored Procedures\getp.sql" />
+    <Build Include="dbo\Stored Procedures\get_user_vars.sql" />
+    <Build Include="dbo\Stored Procedures\get_obj_id.sql" />
+    <Build Include="dbo\Stored Procedures\exec_sql.sql" />
+    <Build Include="dbo\Stored Procedures\end_transfer.sql" />
+    <Build Include="dbo\Stored Procedures\end_batch.sql" />
+    <Build Include="dbo\Stored Procedures\drop_batch.sql" />
+    <Build Include="dbo\Stored Procedures\detect_dead_batches.sql" />
+    <Build Include="dbo\Stored Procedures\dec_nesting.sql" />
+    <Build Include="dbo\Stored Procedures\debug.sql" />
+    <Build Include="util\Stored Procedures\apply_params.sql" />
+    <Build Include="util\Stored Procedures\print_max.sql" />
+    <Build Include="util\Stored Procedures\refresh_views.sql" />
+    <Build Include="dbo\User Defined Types\SplitList.sql" />
+    <Build Include="dbo\User Defined Types\ParamTable.sql" />
+    <Build Include="dbo\User Defined Types\ObjTreeTableParam.sql" />
+    <Build Include="dbo\User Defined Types\ObjTreeTable.sql" />
+    <Build Include="dbo\User Defined Types\MappingTable.sql" />
+    <Build Include="dbo\User Defined Types\ColumnTable.sql" />
+    <None Include="data\betl\static.Status.sql" />
+    <None Include="data\betl\static.Column.sql" />
+    <None Include="data\betl\static.Column_type.sql" />
+    <None Include="data\betl\static.Log_type.sql" />
+    <None Include="data\betl\static.Log_level.sql" />
+    <None Include="data\betl\static.Dep_type.sql" />
+    <None Include="data\betl\static.Obj_type.sql" />
+    <None Include="data\betl\static.Property.sql" />
+    <None Include="data\betl\static.Version.sql" />
+    <None Include="data\betl\static.Template.sql" />
+    <None Include="data\betl\static.Server_type.sql" />
+    <None Include="data\betl\dbo.Batch.sql" />
+    <None Include="data\betl\dbo.Error.sql" />
+    <None Include="data\betl\dbo.Obj.sql" />
+    <None Include="data\betl\dbo.Transfer.sql" />
+    <Build Include="util\Stored Procedures\trunc.sql" />
+    <Build Include="dbo\Sequences\seq_col_hist.sql" />
+    <Build Include="Security\static.sql" />
+    <Build Include="Security\util.sql" />
+    <Build Include="dbo\Views\Obj_ext_unpivot.sql" />
+    <Build Include="dbo\Tables\Col_h.sql" />
+    <Build Include="dbo\Views\Obj_tree_staging_views.sql" />
+    <Build Include="dbo\Stored Procedures\update_object_tree.sql" />
+    <Build Include="dbo\Sequences\seq_Obj.sql" />
+    <Build Include="dbo\Views\Monitor.sql" />
+    <Build Include="dbo\Views\Logging_ext.sql" />
+    <Build Include="dbo\Stored Procedures\clear_meta_data.sql" />
+    <Build Include="dbo\Views\Obj_tree_rdw_views.sql" />
+    <Build Include="dbo\Views\Obj_ext_all_unpivot.sql" />
+    <Build Include="dbo\Views\Obj_ext_all.sql" />
+    <Build Include="dbo\Views\Obj_tree_rdw_tables.sql" />
+    <Build Include="dbo\Stored Procedures\setup.sql" />
+    <Build Include="dbo\Stored Procedures\setp_obj_id.sql" />
+    <Build Include="dbo\Views\Obj_tree_staging_tables.sql" />
+    <Build Include="static\Tables\Column_enriched.sql" />
+    <Build Include="static\Views\column_enriched_ext.sql" />
+    <Build Include="dbo\Views\Obj_tree_idw_views.sql" />
+    <None Include="dbo\Views\Obj_tree_idw_tables_sur_pkeys.sql" />
+    <Build Include="dbo\Views\Obj_tree_idw_tables.sql" />
+    <None Include="dbo\Views\Obj_tree_idw_table_h_cols.sql" />
+    <None Include="dbo\Views\Obj_tree_idw_table_cols.sql" />
+    <Build Include="dbo\Views\Obj_tree_idw_hubs_nat_pkey_size.sql" />
+    <Build Include="dbo\Views\Obj_tree_idw_hub_cols.sql" />
+    <Build Include="dbo\Stored Procedures\get_transfer_list.sql" />
+    <Build Include="dbo\Stored Procedures\enrich_columns.sql" />
+    <Build Include="static\Tables\Rule.sql" />
+    <None Include="dbo\Views\Table_size.sql" />
+    <Build Include="dbo\Stored Procedures\setr.sql" />
+    <Build Include="static\Tables\Data_dic.sql" />
+    <Build Include="dbo\Tables\Rule_mapping.sql" />
+    <Build Include="dbo\Views\Obj_tree_idw_table_cols_basic.sql" />
+    <Build Include="script\copy_tables_in_DM.sql" />
+    <Build Include="script\create_views.sql" />
+    <Build Include="script\current activity.sql" />
+    <Build Include="script\drop_all_tables.sql" />
+    <Build Include="script\list_permissions.sql" />
+    <Build Include="script\measure_IO.sql" />
+    <Build Include="script\Table_size.sql" />
+    <Build Include="script\update_column_type.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PreDeploy Include="data\PreDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="data\PostDeployment.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\PreDeployment.Updates.sql" />
+    <None Include="data\PostDeployment.Updates.sql" />
+    <None Include="data\PostDeployment.StaticTablesList.sql" />
+    <None Include="comp_sqldb_with_project.scmp" />
+  </ItemGroup>
+</Project>
