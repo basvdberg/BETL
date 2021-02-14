@@ -3,3 +3,7 @@
 ################################################################################
 
 /sqldb-betl/obj/Debug
+/sqldb-betl/bin/Output
+/.vs/betl4Azure/v16
+/.vs/BETL2/v16
+/.vs
