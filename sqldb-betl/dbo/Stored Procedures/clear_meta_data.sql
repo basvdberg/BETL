@@ -33,8 +33,6 @@ begin
 		NULLIF([Source].[src_obj_id], [Target].[src_obj_id]) IS NOT NULL OR NULLIF([Target].[src_obj_id], [Source].[src_obj_id]) IS NOT NULL OR 
 		NULLIF([Source].[_create_dt], [Target].[_create_dt]) IS NOT NULL OR NULLIF([Target].[_create_dt], [Source].[_create_dt]) IS NOT NULL OR 
 		NULLIF([Source].[_delete_dt], [Target].[_delete_dt]) IS NOT NULL OR NULLIF([Target].[_delete_dt], [Source].[_delete_dt]) IS NOT NULL OR 
-		NULLIF([Source].[_request_create_dt], [Target].[_request_create_dt]) IS NOT NULL OR NULLIF([Target].[_request_create_dt], [Source].[_request_create_dt]) IS NOT NULL OR 
-		NULLIF([Source].[_request_delete_dt], [Target].[_request_delete_dt]) IS NOT NULL OR NULLIF([Target].[_request_delete_dt], [Source].[_request_delete_dt]) IS NOT NULL OR 
 		NULLIF([Source].[_transfer_id], [Target].[_transfer_id]) IS NOT NULL OR NULLIF([Target].[_transfer_id], [Source].[_transfer_id]) IS NOT NULL OR 
 		NULLIF([Source].[_record_dt], [Target].[_record_dt]) IS NOT NULL OR NULLIF([Target].[_record_dt], [Source].[_record_dt]) IS NOT NULL OR 
 		NULLIF([Source].[_record_user], [Target].[_record_user]) IS NOT NULL OR NULLIF([Target].[_record_user], [Source].[_record_user]) IS NOT NULL) THEN
@@ -49,14 +47,12 @@ begin
 	  [src_obj_id] = [Source].[src_obj_id], 
 	  [_create_dt] = [Source].[_create_dt], 
 	  [_delete_dt] = [Source].[_delete_dt], 
-	  [_request_create_dt] = [Source].[_request_create_dt], 
-	  [_request_delete_dt] = [Source].[_request_delete_dt], 
 	  [_transfer_id] = [Source].[_transfer_id], 
 	  [_record_dt] = [Source].[_record_dt], 
 	  [_record_user] = [Source].[_record_user]
 	WHEN NOT MATCHED BY TARGET THEN
-	 INSERT([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[_create_dt],[_delete_dt],[_request_create_dt],[_request_delete_dt],[_transfer_id],[_record_dt],[_record_user])
-	 VALUES([Source].[obj_id],[Source].[obj_name],[Source].[obj_type_id],[Source].[parent_id],[Source].[prefix],[Source].[obj_name_no_prefix],[Source].[server_type_id],[Source].[identifier],[Source].[src_obj_id],[Source].[_create_dt],[Source].[_delete_dt],[Source].[_request_create_dt],[Source].[_request_delete_dt],[Source].[_transfer_id],[Source].[_record_dt],[Source].[_record_user])
+	 INSERT([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[_create_dt],[_delete_dt],[_transfer_id],[_record_dt],[_record_user])
+	 VALUES([Source].[obj_id],[Source].[obj_name],[Source].[obj_type_id],[Source].[parent_id],[Source].[prefix],[Source].[obj_name_no_prefix],[Source].[server_type_id],[Source].[identifier],[Source].[src_obj_id],[Source].[_create_dt],[Source].[_delete_dt],[Source].[_transfer_id],[Source].[_record_dt],[Source].[_record_user])
 	WHEN NOT MATCHED BY SOURCE THEN 
 	 DELETE
 	;

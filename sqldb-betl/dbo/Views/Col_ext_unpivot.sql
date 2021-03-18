@@ -4,6 +4,7 @@
 
 
 
+
 CREATE view [dbo].[Col_ext_unpivot] as 
 
 
@@ -33,10 +34,8 @@ CREATE view [dbo].[Col_ext_unpivot] as
 		, [primary_key_sorting]
 		FROM [dbo].[Col_ext]
 		where 
-						( ( _delete_dt is null  
-						and _request_delete_dt is null)  -- column is not deleted or requested to be deleted. 
-					  or _request_create_dt is not null -- column is deleted, but also requested
-					  ) 
+					_delete_dt is null  
+					
 
 	)
 

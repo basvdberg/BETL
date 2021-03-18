@@ -209,7 +209,6 @@
     <Build Include="dbo\Stored Procedures\log.sql" />
     <Build Include="dbo\Stored Procedures\ingest_obj_tree.sql" />
     <Build Include="dbo\Stored Procedures\info.sql" />
-    <Build Include="dbo\Stored Procedures\inc_nesting.sql" />
     <Build Include="dbo\Stored Procedures\getp.sql" />
     <Build Include="dbo\Stored Procedures\get_user_vars.sql" />
     <Build Include="dbo\Stored Procedures\get_obj_id.sql" />
@@ -218,7 +217,6 @@
     <Build Include="dbo\Stored Procedures\end_batch.sql" />
     <Build Include="dbo\Stored Procedures\drop_batch.sql" />
     <Build Include="dbo\Stored Procedures\detect_dead_batches.sql" />
-    <Build Include="dbo\Stored Procedures\dec_nesting.sql" />
     <Build Include="dbo\Stored Procedures\debug.sql" />
     <Build Include="util\Stored Procedures\apply_params.sql" />
     <Build Include="util\Stored Procedures\print_max.sql" />
@@ -250,28 +248,17 @@
     <Build Include="Security\util.sql" />
     <Build Include="dbo\Views\Obj_ext_unpivot.sql" />
     <Build Include="dbo\Tables\Col_h.sql" />
-    <Build Include="dbo\Views\Obj_tree_staging_views.sql" />
     <Build Include="dbo\Stored Procedures\update_object_tree.sql" />
     <Build Include="dbo\Sequences\seq_Obj.sql" />
     <Build Include="dbo\Views\Monitor.sql" />
     <Build Include="dbo\Views\Logging_ext.sql" />
     <Build Include="dbo\Stored Procedures\clear_meta_data.sql" />
-    <Build Include="dbo\Views\Obj_tree_rdw_views.sql" />
     <Build Include="dbo\Views\Obj_ext_all_unpivot.sql" />
     <Build Include="dbo\Views\Obj_ext_all.sql" />
-    <Build Include="dbo\Views\Obj_tree_rdw_tables.sql" />
     <Build Include="dbo\Stored Procedures\setup.sql" />
     <Build Include="dbo\Stored Procedures\setp_obj_id.sql" />
-    <Build Include="dbo\Views\Obj_tree_staging_tables.sql" />
     <Build Include="static\Tables\Column_enriched.sql" />
     <Build Include="static\Views\column_enriched_ext.sql" />
-    <Build Include="dbo\Views\Obj_tree_idw_views.sql" />
-    <None Include="dbo\Views\Obj_tree_idw_tables_sur_pkeys.sql" />
-    <Build Include="dbo\Views\Obj_tree_idw_tables.sql" />
-    <None Include="dbo\Views\Obj_tree_idw_table_h_cols.sql" />
-    <None Include="dbo\Views\Obj_tree_idw_table_cols.sql" />
-    <Build Include="dbo\Views\Obj_tree_idw_hubs_nat_pkey_size.sql" />
-    <Build Include="dbo\Views\Obj_tree_idw_hub_cols.sql" />
     <Build Include="dbo\Stored Procedures\get_transfer_list.sql" />
     <Build Include="dbo\Stored Procedures\enrich_columns.sql" />
     <Build Include="static\Tables\Rule.sql" />
@@ -279,7 +266,6 @@
     <Build Include="dbo\Stored Procedures\setr.sql" />
     <Build Include="static\Tables\Data_dic.sql" />
     <Build Include="dbo\Tables\Rule_mapping.sql" />
-    <Build Include="dbo\Views\Obj_tree_idw_table_cols_basic.sql" />
     <Build Include="script\copy_tables_in_DM.sql" />
     <Build Include="script\create_views.sql" />
     <Build Include="script\current activity.sql" />
@@ -288,6 +274,17 @@
     <Build Include="script\measure_IO.sql" />
     <Build Include="script\Table_size.sql" />
     <Build Include="script\update_column_type.sql" />
+    <Build Include="static\Tables\Join_type.sql" />
+    <Build Include="dbo\Tables\Transform.sql" />
+    <Build Include="dbo\Tables\Obj_map_transform.sql" />
+    <Build Include="dbo\Tables\Obj_map.sql" />
+    <Build Include="dbo\Tables\Obj_def.sql" />
+    <Build Include="dbo\Tables\Col_map_transform.sql" />
+    <Build Include="dbo\Tables\Col_map.sql" />
+    <Build Include="dbo\Tables\Col_def.sql" />
+    <Build Include="dbo\Views\obj_tree_ms_sql_server.sql" />
+    <Build Include="dbo\Sequences\seq_Obj_mapping.sql" />
+    <Build Include="dbo\Sequences\seq_Obj_def.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />

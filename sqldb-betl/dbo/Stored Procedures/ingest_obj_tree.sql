@@ -1,24 +1,26 @@
 ﻿/*------------------------------------------------------------------------------------------------
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
 --------------------------------------------------------------------------------------------------
--- 2019-11-28 BvdB This procedure will update the object tree meta data using the input that is provided in the table valued param
---                 This proc will refresh the meta data of servers, databases, schemas, tables, views and columns (also ssas) 
--- Applies to: Data Factory v2
-
-		--obj_type_id	obj_type
-		--10	table
-		--20	view
-		--30	schema
-		--40	database
-		--50	server
-		--60	user
-		--70	procedure
-		--80	role
+-- 2019-11-28 BvdB Ingest object tree will load the object tree into the meta database. The object tree consists of objects and columns. 
+--				   the object tree should be passed as a table valued param. This is mainly done because in Azure data factory it's easy to create 
+--                 a data copy task from a source system into a stored procedure using a table valued parameter. 
+--
+--obj_type_id	obj_type
+--10	table
+--20	view
+--30	schema
+--40	database
+--50	server
+--60	user
+--70	procedure
+--80	role
 
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
-FROM [dbo].[Obj_tree_Staging_tables]
+FROM dbo.obj_tree_ms_sql_server
+
+[dbo].[Obj_tree_Staging_tables]
 select * from @obj_tree_param 
 exec [dbo].[ingest_obj_tree] @obj_tree_param
 select * from dbo.obj_ext
@@ -27,21 +29,14 @@ exec verbose
 CREATE procedure [dbo].[ingest_obj_tree] 
 	@obj_tree_param ObjTreeTableParam READONLY  --_table_name as sysname -- this is a global temp table that is unique for this transfer
 	, @batch_id as int = -1 
-	, @is_request as bit=0 -- set to 1 when this object tree is a request (instead of an observation). 
 	, @detect_table_delete as bit =0
 	, @detect_view_delete as bit =0
+	-- for example: Set this to 0 if you don't have views in your object tree, but you don't want to mark existing views in the meta database as deleted. 
 	, @detect_schema_delete as bit =0
-
-	-- set this to for example table if you don't have views in your object tree, but you don't want to mark them as deleted. 
-	-- For example useful when ingesting requested object trees 
-
-	-- a request obj tree is for example an object tree that is derived from an existing object tree, but that is not persisted yet. 
-	 --by default @is_request =0 meaning that the obj tree originates from an observation ( e.g. select * from sys.tables). 
-	 --currently only tables and views can be requested ( not schemas, databases or servers). 
 
 as 
 begin 
-	 --declare @batch_id as int = -1 , @obj_tree_param ObjTreeTableParam , @is_request as bit = 1
+	 --declare @batch_id as int = -1 , @obj_tree_param ObjTreeTableParam 
 	 --insert into @obj_tree_param select * from dbo.Obj_tree_Staging
 	
 	set nocount on 
@@ -60,20 +55,10 @@ begin
 		, @proc_name as sysname =  object_name(@@PROCID)
 		, @now as datetime = getdate() -- all records the same timestamp so that you can join them easier. 
 		, @create_dt as datetime 
-		, @request_create_dt as datetime 
 		, @delete_dt as datetime 
-		, @request_delete_dt as datetime 
 
-	if @is_request=1
-	begin
-		set @request_create_dt =@now
-		set @request_delete_dt =@now
-	end
-	else 
-	begin
-		set @delete_dt =@now
-		set @create_dt =@now
-	end
+	set @delete_dt =@now
+	set @create_dt =@now
 
 	-- standard BETL header code... 
 	set nocount on 
@@ -101,8 +86,8 @@ begin
 		USING #servers src
 		ON (trg.obj_name = src.server_name and trg.obj_type_id = 50) 
 		WHEN NOT MATCHED THEN  -- not exists
-			insert (obj_type_id, obj_name, server_type_id, _transfer_id, _create_dt, _request_create_dt) 
-			values (50, server_name, server_type_id , @transfer_id, @create_dt, @request_create_dt)
+			insert (obj_type_id, obj_name, server_type_id, _transfer_id, _create_dt) 
+			values (50, server_name, server_type_id , @transfer_id, @create_dt)
 		OUTPUT 1 INTO @C;
 
 		insert into @obj_tree 
@@ -155,13 +140,12 @@ begin
 		-- undeletes
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted
 				 UPDATE set 
-	 				_delete_dt = case when @is_request=0 then null else _delete_dt end -- undelete
-					, _request_create_dt = case when @is_request=1 then @now else _request_create_dt end -- request undelete
+	 				_delete_dt = null -- undelete
 					, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
 		-- inserts
 		WHEN NOT MATCHED THEN  -- not exists
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt, _request_create_dt) 
-			VALUES (40, src.db_name, parent_id, server_type_id, @transfer_id, @create_dt, @request_create_dt) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt) 
+			VALUES (40, src.db_name, parent_id, server_type_id, @transfer_id, @create_dt) 
 -- no delete detection because this proc usually is run based on an object tree of 1 specific database. 
 --		WHEN NOT MATCHED BY SOURCE and trg._delete_dt is null AND trg.obj_type_id = 40 and trg.parent_id in ( select distinct parent_id from #dbs)  THEN  -- exists but not in source --> mark as deleted
 --			UPDATE set _delete_dt = @now , _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
@@ -195,17 +179,15 @@ begin
 		ON (trg.obj_name = src.schema_name and trg.obj_type_id = 30 and trg.parent_id = src.parent_id) 
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted  
 			UPDATE set 
-	 			_delete_dt = case when @is_request=0 then null else _delete_dt end -- undelete
-				, _request_create_dt = case when @is_request=1 then @now else _request_create_dt end -- request undelete
+	 			_delete_dt = null -- undelete
 				,_record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  
 		WHEN NOT MATCHED THEN  -- not exists->insert
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt, _request_create_dt)  
-			VALUES (30, src.[schema_name], parent_id, server_type_id, @transfer_id, @create_dt, @request_create_dt)  
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt)  
+			VALUES (30, src.[schema_name], parent_id, server_type_id, @transfer_id, @create_dt)  
 		WHEN NOT MATCHED BY SOURCE and trg._delete_dt is null AND trg.obj_type_id = 30 and trg.parent_id IN ( select distinct parent_id from #schemas) 
 			and @detect_schema_delete=1 THEN  -- exists but not in source --> mark as deleted
 			UPDATE set 
-				_delete_dt = case when @is_request=0 then @now else _delete_dt end --delete
-				,_request_delete_dt = case when @is_request=1 then @now else _request_delete_dt end -- request delete
+				_delete_dt = @now --delete
 				,_record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
 		OUTPUT 
 			CASE 
@@ -232,12 +214,10 @@ begin
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
-							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1)  -- changed
-							or ( @is_request=1 and _request_create_dt is null ) )
+							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1))  -- changed
 		THEN -- exists, but marked as deleted  or something changed
 			UPDATE set
-	 			_delete_dt = case when @is_request=0 then null else _delete_dt end -- undelete
-				, _request_create_dt = case when @is_request=1 then @now else _request_create_dt end -- request undelete
+	 			_delete_dt = null -- undelete
 				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
 				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
 				, trg.external_obj_id = src.external_obj_id
@@ -249,13 +229,11 @@ begin
 		and  ( ( @detect_table_delete=1 and trg.obj_type_id = 10  ) or ( @detect_view_delete=1  and trg.obj_type_id = 20  ) ) 
 		THEN  -- exists but not in source --> mark as deleted 
 			UPDATE set
-				_delete_dt = case when @is_request=0 then isnull(@now,_delete_dt)  else _delete_dt end -- delete
-				,_request_create_dt = case when @is_request=1 then null else _request_create_dt end  -- set _request_create_dt to null for deleted objects, so that they will not be created again. 
-				,_request_delete_dt = case when @is_request=1 then @now else _request_delete_dt end -- request delete
+				_delete_dt = isnull(@now,_delete_dt)  -- delete
 				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, _request_create_dt, external_obj_id) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id], server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, @request_create_dt, external_obj_id ) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id], server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -296,9 +274,7 @@ begin
 		deallocate db_cursor 
 		-- end set property source for each obj
 
-
 		-- begin delete propagation if a database or schema is marked as deleted-> also mark descendants as deleted. 
-		if @is_request = 0 
 		begin 
 			UPDATE child
 			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
@@ -319,39 +295,11 @@ begin
 
 			-- update orphan columns
 			update col set _delete_dt = o._delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
-			from dbo.col_h col
+			from dbo.col col
 			inner join dbo.obj o on col.obj_id = o.obj_id 
 			where 
 				o._delete_dt is not null -- parent is deleted
 				and col._delete_dt is null  -- child is not deleted
-			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
-		end
-		else
-		begin 
-			UPDATE child
-			set _request_delete_dt = parent._request_delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
-			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id 
-			where parent._request_delete_dt is not null 
-			and child._request_delete_dt is null 
-			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
-
-			-- if prev statement set schemas to deleted -> check again for tables and views in these schemas
-			UPDATE child
-			set _request_delete_dt = parent._request_delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
-			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id 
-			where parent._request_delete_dt is not null 
-			and child._request_delete_dt is null 
-			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
-
-			-- update orphan columns
-			update col set _request_delete_dt = o._request_delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
-			from dbo.col col
-			inner join dbo.obj o on col.obj_id = o.obj_id 
-			where 
-				o._request_delete_dt is not null -- parent is deleted
-				and col._request_delete_dt is null  -- child is not deleted
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 		end
 		-- end delete propagation if a database or schema is marked as deleted-> also mark descendants as deleted. 
@@ -422,9 +370,8 @@ begin
 				when in_src=1 and trg.obj_id is null then 'NEW'
 				when in_src=1 and trg.obj_id is not null and src._chksum <> trg._chksum then 'CHANGED'
 				when in_src=1 and trg.obj_id is not null and src._chksum = trg._chksum and trg._delete_dt is null then 'UNCHANGED'
-				when in_src=1 and trg.obj_id is not null and src._chksum = trg._chksum and trg._delete_dt is not null and trg._request_create_dt is null then 'UNDELETED'
+				when in_src=1 and trg.obj_id is not null and src._chksum = trg._chksum and trg._delete_dt is not null then 'UNDELETED'
 				when in_src is null and trg.obj_id is not null and trg._delete_dt is null then 'DELETED'
-				when in_src is null and trg.obj_id is not null and @is_request=1 and _request_create_dt is not null  then 'NOT_REQUESTED'
 				end mutation
 				, case when in_src is null and trg.obj_id is not null then trg._eff_dt else @now end _eff_dt
 				, trg.column_id column_id 
@@ -433,12 +380,12 @@ begin
 		into #mutation
 		from cols src
 		full outer join ( 
-			SELECT  h.column_name, isnull(h._chksum,0) _chksum, h._eff_dt, h.obj_id, h.column_id , h._delete_dt, h.column_type_id, _request_create_dt
+			SELECT  h.column_name, isnull(h._chksum,0) _chksum, h._eff_dt, h.obj_id, h.column_id , h._delete_dt, h.column_type_id
 			FROM  ( select distinct obj_id obj_id from @obj_tree)  tv
-			inner join [dbo].[Col_h] AS h on h.obj_id = tv.obj_id
+			inner join [dbo].[Col] AS h on h.obj_id = tv.obj_id
 			WHERE     (_eff_dt =
 						  ( SELECT     MAX(_eff_dt) max_eff_dt
-							FROM       [dbo].[Col_h] h2
+							FROM       [dbo].[Col] h2
 							WHERE      h.column_id = h2.column_id
 						   )
 					  )
@@ -451,45 +398,38 @@ begin
 			select * from #mutation --where mutation <> 'UNCHANGED'
 
 		-- new records
-		insert into dbo.Col_h ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
-		, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value, _create_dt, _request_create_dt) 
+		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
+		, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value) 
 		select obj_id,column_name, _eff_dt, ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale,
 		_chksum, -1
 		, isnull(column_type_id, derived_column_type_id) -- for new columns we take the derived column type if nothing is entered in obj_tree
-		, primary_key_sorting, default_value, @create_dt, @request_create_dt
+		, primary_key_sorting, default_value
 		from #mutation
 		where mutation = 'NEW'
  
-		insert into dbo.Col_h ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len, numeric_precision,numeric_scale 
-		, _delete_dt, column_id, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value , _create_dt, _request_create_dt)  
+		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len, numeric_precision,numeric_scale 
+		, _delete_dt, column_id, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value  )
 		select obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
-		, case when @is_request=0 then null else _delete_dt end _delete_dt
+		, null _delete_dt
 		, column_id
 		, _chksum
 		, -1
 		, isnull(column_type_id , trg_column_type_id)  trg_column_type_id
-		, primary_key_sorting, default_value, @create_dt, @request_create_dt
+		, primary_key_sorting, default_value
 		from #mutation
 		where mutation in ('CHANGED', 'UNDELETED')
 
 		update c 
 		set 
-		 	_delete_dt = case when @is_request=0 then @now else c._delete_dt end -- delete
-			, _request_delete_dt = case when @is_request=1 then @now else c._request_delete_dt end -- request delete
+		 	_delete_dt = @now -- delete
 			, _record_dt = @now
 			, _record_user = suser_sname() 
-		from dbo.Col_h c 
+		from dbo.Col c 
 		inner join #mutation m on c.column_id = m.column_id and c._eff_dt = m._eff_dt
 		where mutation=	'DELETED' 
 		
-		update c 
-		set _request_create_dt = null 
-		from dbo.Col_h c 
-		inner join #mutation m on c.column_id = m.column_id and c._eff_dt = m._eff_dt
-		where mutation=	'NOT_REQUESTED' 
 
-
---		select * from col_h where column_id = 2730 and _eff_dt= '2020-07-01 06:45:16.723'
+--		select * from Col where column_id = 2730 and _eff_dt= '2020-07-01 06:45:16.723'
 		-- 2020-07-01 06:45:16.723	
 
 		-- end columns
@@ -500,7 +440,6 @@ begin
 			when 'CHANGED' then 2
 			when 'DELETED' then 3 
 			when 'UNDELETED' then 4 
-			when 'NOT_REQUESTED' then 2
 		end 
 		from #mutation
 		where mutation is not null -- in ('NEW', 'CHANGED', 'DELETED' , 'UNDELETED')

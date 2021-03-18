@@ -11,8 +11,6 @@
     [external_obj_id]    INT            NULL,
     [_create_dt]         DATETIME       NULL,
     [_delete_dt]         DATETIME       NULL,
-    [_request_create_dt] DATETIME       NULL,
-    [_request_delete_dt] DATETIME       NULL,
     [_transfer_id]       INT            NULL,
     [_record_dt]         DATETIME       CONSTRAINT [DF_Obj_h_record_dt] DEFAULT (getdate()) NULL,
     [_record_user]       NVARCHAR (255) CONSTRAINT [DF_Obj_h_record_user] DEFAULT (suser_sname()) NULL,
@@ -22,6 +20,8 @@
     CONSTRAINT [FK_Obj_Obj] FOREIGN KEY ([parent_id]) REFERENCES [dbo].[Obj] ([obj_id]),
     CONSTRAINT [FK_Obj_src_Obj] FOREIGN KEY ([src_obj_id]) REFERENCES [dbo].[Obj] ([obj_id])
 );
+
+
 
 
 

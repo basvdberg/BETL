@@ -11,6 +11,7 @@
 
 
 
+
 	  
 
 CREATE VIEW [dbo].[Col_ext]
@@ -37,10 +38,8 @@ c.column_id
 , c.default_value
 , o.server_name 
 , c.primary_key_sorting
-, c._create_dt
 , c._delete_dt
-, c._request_create_dt
-, c._request_delete_dt
+
 
 FROM dbo.Col AS c 
 INNER JOIN dbo.Obj_ext_all AS o ON c.obj_id = o.obj_id

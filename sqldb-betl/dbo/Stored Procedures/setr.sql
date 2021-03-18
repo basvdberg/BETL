@@ -46,7 +46,7 @@ begin
   select @obj_id = obj_id 
   from dbo.Obj_ext
   where obj_name = @obj_name and schema_name = @schema_name
-  and ( _delete_dt is null  or _request_create_dt >= _delete_dt  ) 
+  and _delete_dt is null 
   
   if @obj_id is null 
   begin 
@@ -58,7 +58,7 @@ begin
   select @col_id = column_id
   from dbo.Col
   where obj_id = @obj_id and column_name = @column_name 
-  and ( _delete_dt is null  or _request_create_dt >= _delete_dt  ) 
+  and ( _delete_dt is null  ) 
 
   if @column_name is null 
 	set @col_id = -1 -- when no column name is specified the rule applies to the entire object. column_id is set to -1 in this case
