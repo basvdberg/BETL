@@ -25,16 +25,12 @@ BETL Core is a data warehouse automation framework.
 ## Pre requisits for **using** BETL
  * T-SQL intermediate level. 
  * A general understanding of the [Handlebars template language](https://handlebarsjs.com/).
+ * You need a SQL Server database (in Azure or on premise). 
  
 ## Pre requisits for **contributing** to BETL
  * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
  * Knowledge of data warehousing best practices.
 
-
-Find more about BETL here: http://www.etlautomation.com.
-<ul>
-  <li>BETL for Azure architecture</li>
-  <li>Getting started</li>
-</ul>
+BETL can be used standalone or combined with Azure data factory or SSIS. 
 
 The [previous version of BETL](https://github.com/basvdberg/BETL) was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
