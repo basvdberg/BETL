@@ -1,30 +1,8 @@
-# BETL for Azure
-BETL for Azure is a complete revision of BETL. BETL is an ETL Engine, which in my world is a synonym for ETL automation software, ETL generation tool/framework or data warehouse automation software. 
+# BETL Core
 
-Nowadays everybody who works in a large data warehouse environment uses an ETL engine to <b>generate ETL by using meta data</b>. There are some commercial products like WhereScape, XpertBI, TimeXtender or I-Refactory, but I prefer to keep matters into my own hands and my experience is that commercial products don't give you the flexibility to build the ETL engine exactly how you want it. 
+BETL Core is a data warehouse automation framework.
 
-BETL is licensed under the <b>GNU GPL</b>, so feel free to dive into the source code and make your own extensions. My hope is that by sharing this knowledge we can all benefit from each other. 
-
-BETL for Azure is made for Azure, but can also be modified for an on premise environment. However there is a T-SQL dependency, so other databases than Microsoft will be difficult. 
-<!--
-<H1>Definitions</h1>
-Let's start with some definitions:
-<table>
-  <tr>
-    <td>Name</td><td>Description</td>
-  </tr>
-  <tr>
-    <td>ETL</td><td>The proces of extracting some data and loading it into a target environment. During this process the data can also be transformed.</td>
-  </tr>
-</table> 
-Find more about BETL here: http://www.etlautomation.com.
-
--->
-
-<ul>
-  <li>BETL for Azure architecture</li>
-  <li>Getting started</li>
-</ul>
+![BETL Components](https://github.com/basvdberg/BETL-Core/blob/main/image/betl_overview.png)
 
 ## What is BETL
 * Free, open source, GNU GPL
@@ -52,5 +30,12 @@ Find more about BETL here: http://www.etlautomation.com.
 ## Pre requisits for **contributing** to BETL
  * T-SQL advanced level. Generate dynamic T-SQL using stored procedures, functions, custom data types. 
  * Knowledge of data warehousing best practices.
+
+
+Find more about BETL here: http://www.etlautomation.com.
+<ul>
+  <li>BETL for Azure architecture</li>
+  <li>Getting started</li>
+</ul>
 
 The [previous version of BETL](https://github.com/basvdberg/BETL) was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. 
