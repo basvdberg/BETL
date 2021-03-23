@@ -237,10 +237,6 @@
     <None Include="data\betl\static.Version.sql" />
     <None Include="data\betl\static.Template.sql" />
     <None Include="data\betl\static.Server_type.sql" />
-    <None Include="data\betl\dbo.Batch.sql" />
-    <None Include="data\betl\dbo.Error.sql" />
-    <None Include="data\betl\dbo.Obj.sql" />
-    <None Include="data\betl\dbo.Transfer.sql" />
     <Build Include="util\Stored Procedures\trunc.sql" />
     <Build Include="dbo\Sequences\seq_col_hist.sql" />
     <Build Include="Security\static.sql" />
@@ -281,12 +277,14 @@
     <Build Include="dbo\Tables\Col_map_transform.sql" />
     <Build Include="dbo\Tables\Col_map.sql" />
     <Build Include="dbo\Tables\Col_def.sql" />
-    <None Include="dbo\Views\obj_tree_ms_sql_server.sql" />
+    <Build Include="dbo\Views\Obj_tree_ms_sql_server.sql" />
     <Build Include="dbo\Sequences\seq_Obj_mapping.sql" />
     <Build Include="dbo\Sequences\seq_Obj_def.sql" />
     <None Include="data\betl\static.Column.sql" />
-    <Build Include="data\sp\sp_generate_merge.sql" />
     <Build Include="data\sp\sp_execute_cd_script.sql" />
+    <Build Include="data\sp\sp_generate_merge.sql" />
+    <Build Include="dbo\Stored Procedures\init_meta_data.sql" />
+    <Build Include="dbo\Functions\server_type.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />
@@ -300,5 +298,12 @@
     <None Include="data\PostDeployment.StaticTablesList.sql" />
     <None Include="comp_sqldb_with_project.scmp" />
     <None Include="sqldb_betl.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\AzureV12\SqlSchemas\master.dacpac">
+      <HintPath>$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\AzureV12\SqlSchemas\master.dacpac</HintPath>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </ArtifactReference>
   </ItemGroup>
 </Project>

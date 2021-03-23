@@ -3,7 +3,7 @@
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
 --------------------------------------------------------------------------------------------------
 2018-01-02 BvdB centralize error handling. Allow custom code to integrate external logging
-exec dbo.log_error 0, 'Something went wrong', 11 , 0, 0, 'aap'
+exec dbo.log_error -1, 'Something went wrong', 11 , 0, 0, 'aap'
 -----------------------------------------------------------------------------------------------
 */
 CREATE PROCEDURE [dbo].[log_error](

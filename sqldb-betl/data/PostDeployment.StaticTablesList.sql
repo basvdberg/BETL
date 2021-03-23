@@ -20,8 +20,9 @@
 :r .\betl\static.Status.sql
 :r .\betl\static.Template.sql
 :r .\betl\static.Version.sql
-:r .\betl\dbo.Error.sql
+/*:r .\betl\dbo.Error.sql
 :r .\betl\dbo.Batch.sql
 :r .\betl\dbo.Obj.sql
 :r .\betl\dbo.Transfer.sql
-
+*/
+exec init_meta_data

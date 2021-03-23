@@ -5,24 +5,18 @@
 --				   the object tree should be passed as a table valued param. This is mainly done because in Azure data factory it's easy to create 
 --                 a data copy task from a source system into a stored procedure using a table valued parameter. 
 --
---obj_type_id	obj_type
---10	table
---20	view
---30	schema
---40	database
---50	server
---60	user
---70	procedure
---80	role
 
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
 FROM dbo.obj_tree_ms_sql_server
 
-[dbo].[Obj_tree_Staging_tables]
 select * from @obj_tree_param 
+
 exec [dbo].[ingest_obj_tree] @obj_tree_param
+
+exec clear_meta_data
+
 select * from dbo.obj_ext
 exec verbose
 */
@@ -33,6 +27,7 @@ CREATE procedure [dbo].[ingest_obj_tree]
 	, @detect_view_delete as bit =0
 	-- for example: Set this to 0 if you don't have views in your object tree, but you don't want to mark existing views in the meta database as deleted. 
 	, @detect_schema_delete as bit =0
+	, @detect_user_delete as bit =0
 
 as 
 begin 
@@ -173,6 +168,9 @@ begin
 		select distinct src.schema_name, db_id parent_id, server_type_id , _source
 		into #schemas
 		from @obj_tree src
+		where src.schema_name is not null 
+
+		-- select * from #schemas
 
 		MERGE [dbo].[Obj] trg
 		USING #schemas src
@@ -203,12 +201,15 @@ begin
 		from @obj_tree o
 		inner join dbo.obj s on o.schema_name = s.obj_name and s.parent_id = o.db_id and s.obj_type_id=30
 		-- end schemas
+		
 
-		-- begin tables and views 
+		-- begin tables, views and users
 		MERGE into [dbo].[Obj] trg
 		USING (
 				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id
 				from @obj_tree -- where obj_name is not null --> include empty schemas 
+				where obj_type_id in ( 10,20) 
+
 		)  src
 		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[schema_id] and trg.obj_type_id in (10,20) )
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
@@ -233,7 +234,7 @@ begin
 				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
 			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id], server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -248,7 +249,51 @@ begin
 		from @obj_tree o
 		inner join dbo.obj s on o.obj_name = s.obj_name and s.parent_id = o.schema_id and s.obj_type_id = o.obj_type_id
 
-		-- end tables and views 
+		-- end tables, views 
+
+		-- begin users
+		MERGE into [dbo].[Obj] trg
+		USING (
+				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id, db_id 
+				from @obj_tree -- where obj_name is not null --> include empty schemas 
+				where obj_type_id = 60 
+
+		)  src
+		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[db_id] and trg.obj_type_id = 60 )
+--		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
+		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
+							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
+							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1))  -- changed
+		THEN -- exists, but marked as deleted  or something changed
+			UPDATE set
+	 			_delete_dt = null -- undelete
+				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
+				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
+				, trg.external_obj_id = src.external_obj_id
+
+		WHEN NOT MATCHED BY SOURCE 
+		--and trg._delete_dt is null 
+		AND trg.obj_type_id in (60) 
+		and trg.parent_id IN ( select distinct [db_id] from @obj_tree )  
+		and @detect_user_delete=1 
+		and trg.obj_type_id = 60   
+		THEN  -- exists but not in source --> mark as deleted 
+			UPDATE set
+				_delete_dt = isnull(@now,_delete_dt)  -- delete
+				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
+			VALUES (src.obj_type_id, src.[obj_name], [db_id] , server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
+		OUTPUT 
+			CASE 
+			WHEN $action= N'INSERT' THEN 1
+--			WHEN $action= N'UPDATE' and inserted._delete_dt is null then 2 -- updated
+			WHEN $action= N'UPDATE' and inserted._delete_dt = @now then 3 -- deleted
+			WHEN $action= N'UPDATE' and inserted._delete_dt is null then 4 -- undeleted
+			END INTO @C
+		;
+		-- end users
+
 
 		if @debug =1 
 			select * from @obj_tree 

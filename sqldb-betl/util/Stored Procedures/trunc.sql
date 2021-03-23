@@ -9,7 +9,7 @@ exec util.trunc 'dbo.Stack'
 */    
 
 CREATE PROCEDURE [util].[trunc] @table sysname
-WITH EXECUTE AS OWNER
+--WITH EXECUTE AS OWNER
 AS
 
 SET NOCOUNT ON
