@@ -124,8 +124,8 @@
     <Folder Include="security" />
     <Folder Include="dbo\Sequences\" />
     <Folder Include="static\Views\" />
-    <Folder Include="data\customer" />
     <Folder Include="script" />
+    <Folder Include="data\sp" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\Transfer.sql" />
@@ -228,7 +228,6 @@
     <Build Include="dbo\User Defined Types\MappingTable.sql" />
     <Build Include="dbo\User Defined Types\ColumnTable.sql" />
     <None Include="data\betl\static.Status.sql" />
-    <None Include="data\betl\static.Column.sql" />
     <None Include="data\betl\static.Column_type.sql" />
     <None Include="data\betl\static.Log_type.sql" />
     <None Include="data\betl\static.Log_level.sql" />
@@ -266,14 +265,14 @@
     <Build Include="dbo\Stored Procedures\setr.sql" />
     <Build Include="static\Tables\Data_dic.sql" />
     <Build Include="dbo\Tables\Rule_mapping.sql" />
-    <Build Include="script\copy_tables_in_DM.sql" />
-    <Build Include="script\create_views.sql" />
-    <Build Include="script\current activity.sql" />
-    <Build Include="script\drop_all_tables.sql" />
-    <Build Include="script\list_permissions.sql" />
-    <Build Include="script\measure_IO.sql" />
-    <Build Include="script\Table_size.sql" />
-    <Build Include="script\update_column_type.sql" />
+    <None Include="script\copy_tables_in_DM.sql" />
+    <None Include="script\create_views.sql" />
+    <None Include="script\current activity.sql" />
+    <None Include="script\drop_all_tables.sql" />
+    <None Include="script\list_permissions.sql" />
+    <None Include="script\measure_IO.sql" />
+    <None Include="script\Table_size.sql" />
+    <None Include="script\update_column_type.sql" />
     <Build Include="static\Tables\Join_type.sql" />
     <Build Include="dbo\Tables\Transform.sql" />
     <Build Include="dbo\Tables\Obj_map_transform.sql" />
@@ -282,9 +281,12 @@
     <Build Include="dbo\Tables\Col_map_transform.sql" />
     <Build Include="dbo\Tables\Col_map.sql" />
     <Build Include="dbo\Tables\Col_def.sql" />
-    <Build Include="dbo\Views\obj_tree_ms_sql_server.sql" />
+    <None Include="dbo\Views\obj_tree_ms_sql_server.sql" />
     <Build Include="dbo\Sequences\seq_Obj_mapping.sql" />
     <Build Include="dbo\Sequences\seq_Obj_def.sql" />
+    <None Include="data\betl\static.Column.sql" />
+    <Build Include="data\sp\sp_generate_merge.sql" />
+    <Build Include="data\sp\sp_execute_cd_script.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />
@@ -297,5 +299,6 @@
     <None Include="data\PostDeployment.Updates.sql" />
     <None Include="data\PostDeployment.StaticTablesList.sql" />
     <None Include="comp_sqldb_with_project.scmp" />
+    <None Include="sqldb_betl.publish.xml" />
   </ItemGroup>
 </Project>

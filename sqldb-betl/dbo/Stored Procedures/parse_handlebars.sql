@@ -25,7 +25,7 @@ select * from col_ext_unpivot
 where obj_id = 156
 order by ordinal_position
 
-exec [dbo].[parse_handlebars] 158, 'create_table_if_not_exists'
+exec [dbo].[parse_handlebars] 69, 'create_table_if_not_exists'
 exec [dbo].[parse_handlebars] 158, 'drop_and_create_table'
 exec [dbo].[parse_handlebars] 156, 'update_idw'
 
@@ -54,7 +54,7 @@ begin
 			, @parent_str as varchar(255)
 			, @node hierarchyid 
 			, @delete_dt datetime
-			, @request_create_dt datetime
+			
 			 ,@node_str as varchar(255)
 			, @c as char
 			, @next_c as char
@@ -84,7 +84,7 @@ begin
 	exec dbo.log @transfer_id, 'HEADER', '? obj_id=? transfer_id=?', @proc_name , @obj_id, @transfer_id
 	-- END standard BETL header code... 
 
-	select @obj_id_test = obj_id , @src_obj_id = src_obj_id , @delete_dt = _delete_dt, @request_create_dt= _request_create_dt
+	select @obj_id_test = obj_id , @src_obj_id = src_obj_id , @delete_dt = _delete_dt
 	,@trg_obj_id= (select max(obj_id) from dbo.obj where src_obj_id = @obj_id ) -- should not happen to have multiple targets, but can happen. 
 	from dbo.obj 
 	where obj_id =@obj_id 
@@ -92,7 +92,7 @@ begin
 	if @debug = 1 
 		select  @src_obj_id src_obj_id, @obj_id obj_id, @trg_obj_id trg_obj_id  , 'running in debug mode. set @debug to 0 to run in ADF ' _output
 
-	if @obj_id_test is null or ( @delete_dt is not null and not @request_create_dt>=@delete_dt )  -- deleted and not requested to be created after this. 
+	if @obj_id_test is null or ( @delete_dt is not null  )  -- deleted 
 	begin 
 		if @delete_dt is not null 
 			exec log @transfer_id, 'ERROR', 'object ? was deleted at ? ', @obj_id , @delete_dt
@@ -111,11 +111,8 @@ begin
 		select ordinal_position, count(*) 
 		from dbo.col_ext c  
 		where obj_id = @obj_id 
-				and ( ( _delete_dt is null  
-						and _request_delete_dt is null)  -- column is not deleted or requested to be deleted. 
-					  or _request_create_dt is not null -- column is deleted, but also requested
-					  ) 
-
+				and  _delete_dt is null  
+		
 		group by ordinal_position
 		having count(*) >1 
 	) 
@@ -384,10 +381,8 @@ FROM rdw.[{{obj_name}}]
 		select ordinal_position
 		from dbo.col_ext c  
 		where obj_id = @obj_id 
-				and ( ( _delete_dt is null  
-						and _request_delete_dt is null)  -- column is not deleted or requested to be deleted. 
-					  or _request_create_dt is not null -- column is deleted, but also requested
-					  ) 
+				and _delete_dt is null  
+		
 	) cols on parent.s = '#each columns' or grand_parent.s = '#each columns'
 	or great_grand_parent.s = '#each columns' 
 	-- for every child that has a parent of type #each columns -> cross join with columns 

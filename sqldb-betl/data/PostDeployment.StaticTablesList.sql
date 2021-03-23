@@ -7,8 +7,8 @@
 
 	3. Include it in the list below. Order of the tables in the list depends on your table relationships.
 		Begin with the tables at the end of your relationship chain.
-
 */
+
 :r .\betl\static.Column.sql
 :r .\betl\static.Column_type.sql
 :r .\betl\static.Dep_type.sql
