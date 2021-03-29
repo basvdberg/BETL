@@ -282,6 +282,7 @@
     <Build Include="data\sp\sp_generate_merge.sql" />
     <Build Include="dbo\Stored Procedures\init_meta_data.sql" />
     <Build Include="dbo\Functions\server_type.sql" />
+    <Build Include="dbo\Stored Procedures\ingest_current_db.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />

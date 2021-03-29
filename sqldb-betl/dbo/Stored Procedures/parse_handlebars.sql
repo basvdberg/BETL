@@ -37,6 +37,7 @@ CREATE procedure [dbo].[parse_handlebars]
 	@obj_id as int 
 	, @template_name as varchar(255)
 	, @transfer_id as int =-1 
+	, @output as varchar(max) =''	OUTPUT  
 
 as 
 
@@ -63,7 +64,7 @@ begin
 			, @j as int 
 
 			, @obj_id_test as int 
-			, @output as varchar(max) =''	
+			
 			, @proc_name as sysname =  object_name(@@PROCID)
 			, @nl as varchar(2) = char(13)+char(10)
 			, @suffix as varchar(max) 

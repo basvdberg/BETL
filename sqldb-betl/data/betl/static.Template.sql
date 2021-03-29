@@ -3,7 +3,7 @@ SET NOCOUNT ON
 
 MERGE INTO [static].[Template] AS [Target]
 USING (VALUES
-  (-1,N'unknown',NULL,NULL,'2019-11-19T18:14:22.970',N'')
+  (-1,N'unknown',NULL,NULL,N'ddl','2019-11-19T18:14:22.970',N'')
  ,(1000,N'staging_create_view_h',N'-- begin staging_create_view_h {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}_h'', ''V'') IS NULL
 exec sp_executesql N''
@@ -17,7 +17,7 @@ SELECT
 FROM {{schema_name}}.[{{obj_name}}]
 ''
 -- end staging_create_view_h {{schema_name}}.{{obj_name}}[{{obj_id}}]
-',N'this view can be used for transformation between staging and rdw. e.g. xml columns are transformed into nvarchar(max)','2020-03-25T10:27:42.713',N'')
+',N'this view can be used for transformation between staging and rdw. e.g. xml columns are transformed into nvarchar(max)',N'ddl','2020-03-25T10:27:42.713',N'')
  ,(2000,N'rdw_create_table',N'-- begin rdw_create_table rdw.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''rdw.{{obj_name}}'', ''U'') IS NULL 
 	CREATE TABLE rdw.{{obj_name}} (
@@ -37,7 +37,7 @@ ALTER TABLE rdw.{{obj_name}} ADD CONSTRAINT
 		{{/if}}
 	{{/each}}
 	) 
--- end rdw_create_table rdw.{{obj_name}}[{{obj_id}}]',N'this template is used e.g. to generate create table DDL from objects in the object tree','2020-03-11T10:42:01.060',N'')
+-- end rdw_create_table rdw.{{obj_name}}[{{obj_id}}]',N'this template is used e.g. to generate create table DDL from objects in the object tree',N'ddl','2020-03-11T10:42:01.060',N'')
  ,(2010,N'drop_and_create_latest_view',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 
 DROP VIEW IF EXISTS {{schema_name}}.[{{obj_name}}]
@@ -63,7 +63,7 @@ and h._eff_dt = (
 ''
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 
-',N'the latest view shows only the latest record in transaction time (e.g. having the max _Eff_dt ) ','2020-03-23T19:25:13.690',N'')
+',N'the latest view shows only the latest record in transaction time (e.g. having the max _Eff_dt ) ',N'ddl','2020-03-23T19:25:13.690',N'')
  ,(2020,N'drop_and_create_latest_view_sur_key',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 DROP VIEW IF EXISTS {{schema_name}}.[{{obj_name}}]
 
@@ -86,7 +86,7 @@ and h._eff_dt = (
 		{{/each}}
 	) 
 ''
--- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}] ',NULL,'2020-07-01T11:01:30.497',N'')
+-- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}] ',NULL,N'ddl','2020-07-01T11:01:30.497',N'')
  ,(3000,N'create_table_if_not_exists',N'-- begin create_table_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NULL 
 	CREATE TABLE {{schema_name}}.{{obj_name}} (
@@ -112,7 +112,7 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 		''
 -- end create_table_if_not_exists  {{schema_name}}.{{obj_name}}[{{obj_id}}]
 
-',N'create table ddl','2020-04-03T12:24:28.643',N'')
+',N'create table ddl',N'ddl','2020-04-03T12:24:28.643',N'')
  ,(3100,N'create_staging_view_if_not_exists',N'-- begin create_view_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''V'') IS NULL
 exec sp_executesql N''
@@ -125,7 +125,7 @@ SELECT
 FROM {{src_schema_name}}.[{{src_obj_name}}]
 ''
 -- end create_view_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
-',N'create view ddl','2020-04-03T17:35:35.340',N'')
+',N'create view ddl',N'ddl','2020-04-03T17:35:35.340',N'')
  ,(3200,N'drop_and_create_table',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
 	DROP TABLE {{schema_name}}.{{obj_name}} 
@@ -153,7 +153,7 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 		''
 -- end drop_and_create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
 
-',N'drop and create table','2020-04-04T09:03:55.033',N'')
+',N'drop and create table',N'ddl','2020-04-04T09:03:55.033',N'')
  ,(3210,N'drop_and_create_staging_table',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
 	DROP TABLE {{schema_name}}.{{obj_name}} 
@@ -168,7 +168,7 @@ CREATE TABLE {{schema_name}}.{{obj_name}} (
 
 -- end drop_and_create_staging_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
 
-',N'no pkey. because uniqueness is handled in rdw','2020-04-04T09:11:00.517',N'')
+',N'no pkey. because uniqueness is handled in rdw',N'ddl','2020-04-04T09:11:00.517',N'')
  ,(3300,N'drop_and_create_staging_view',N'-- begin drop_and_create_staging_view {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 IF OBJECT_ID(''{{schema_name}}.[{{obj_name}}]'', ''V'') IS NOT NULL
 	DROP VIEW {{schema_name}}.[{{obj_name}}]
@@ -183,7 +183,7 @@ SELECT
 FROM {{src_schema_name}}.[{{src_obj_name}}]
 ''
 -- end drop_and_create_staging_view{{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
-',NULL,'2020-04-04T20:44:12.237',N'')
+',NULL,N'ddl','2020-04-04T20:44:12.237',N'')
  ,(3400,N'create_table',N'-- begin create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
 CREATE TABLE {{schema_name}}.{{obj_name}} (
 	{{#each columns}}
@@ -208,7 +208,7 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 		''
 -- end create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
 
-',NULL,'2020-04-15T12:53:01.730',N'')
+',NULL,N'ddl','2020-04-15T12:53:01.730',N'')
  ,(4000,N'rdw_insert',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
 -- obj_id is historic rdw table ( we need access to src and trg)
@@ -271,7 +271,7 @@ FROM (
 
 select @@rowcount rec_cnt_new
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
-',NULL,'2020-04-20T15:06:01.930',N'')
+',NULL,N'etl','2020-04-20T15:06:01.930',N'')
  ,(5000,N'create_table_if_not_exists_identity',N'-- begin create_table_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NULL 
 	CREATE TABLE {{schema_name}}.{{obj_name}} (
@@ -297,7 +297,7 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 		''
 -- end create_table_if_not_exists  {{schema_name}}.{{obj_name}}[{{obj_id}}]
 
-',NULL,'2020-06-24T13:47:03.290',N'')
+',NULL,N'ddl','2020-06-24T13:47:03.290',N'')
  ,(6000,N'update_idw',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
 -- obj_id is the idw target table E.g. idw_imp.Persoon (src) -> idw.Persoon_h (obj_id) -> idw.Persoon (trg: latest view)
@@ -384,7 +384,7 @@ left join idw_hub.{{src_obj_name}} hub on
 
 select @@rowcount rec_cnt_new
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
-',NULL,'2020-06-24T15:02:52.530',N'')
+',NULL,N'etl','2020-06-24T15:02:52.530',N'')
  ,(6100,N'update_idw_hub',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
 -- obj_id is the idw_hub table 
@@ -422,24 +422,210 @@ from (
 ) q 
 select @@rowcount rec_cnt_new
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
-',NULL,'2020-06-30T08:23:10.940',N'')
-) AS [Source] ([template_id],[template_name],[template_code],[template_description],[_record_dt],[_record_name])
+',NULL,N'etl','2020-06-30T08:23:10.940',N'')
+ ,(6200,N'obj_tree_ms_sql_server',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+-- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
+
+select 
+	null src_obj_id
+	, isnull(o.object_id, db.database_id) external_obj_id 
+	,  dbo.server_type() server_type 
+	, @@SERVERNAME server_name 
+	, db.name db_name
+	, s.name [schema_name]
+	, o.name as obj_name 
+	, case 
+			when o.type = ''U'' then 10 
+			when o.type = ''V'' then 20 
+			when s.name is not null then 30
+			when db.name is not null then 40 
+			else 50 -- server
+	  end obj_type_id 
+	, c.column_id ordinal_position
+	, c.name column_name
+	, null column_type_id
+	, c.is_nullable is_nullable
+	, t.name data_type 
+	, c.max_length max_len
+	--, case when DATA_TYPE in (''int'', ''bigint'', ''smallint'', ''tinyint'', ''bit'') then cast(null as int) else numeric_precision end numeric_precision
+	, convert(tinyint, CASE -- int/decimal/numeric/real/float/money  
+	  WHEN c.system_type_id IN (48, 52, 56, 59, 60, 62, 106, 108, 122, 127) THEN c.precision  
+	  END)          AS NUMERIC_PRECISION
+	, convert(int, CASE -- datetime/smalldatetime  
+	  WHEN c.system_type_id IN (40, 41, 42, 43, 58, 61) THEN NULL  
+	  ELSE ODBCSCALE(c.system_type_id, c.scale) END) AS NUMERIC_SCALE
+	, case when ic.is_descending_key=0 then ''ASC''when ic.is_descending_key=1 then ''DESC''else null end [primary_key_sorting]
+	, convert(nvarchar(4000),  
+	  OBJECT_DEFINITION(c.default_object_id))   AS [default_value]
+	, null _source
+from 
+	{{db_name}}.sys.databases db
+	full outer join {{db_name}}.sys.schemas s on db.database_id = db_id()
+	left join {{db_name}}.sys.objects o on o.schema_id = s.schema_id
+	and o.type in ( ''U'',''V'') -- only tables and views
+	and o.object_id not in 
+		(
+		select major_id 
+		from {{db_name}}.sys.extended_properties  
+		where name = N''microsoft_database_tools_support'' 
+		and minor_id = 0 and class = 1) -- exclude ssms diagram objects
+	left join {{db_name}}.sys.columns c on c.object_id = o.object_id 
+	left join {{db_name}}.sys.types t on c.user_type_id = t.user_type_id 
+	--  = s.name and col.table_name = o.name
+	--	left join {{db_name}}.sys.columns col on 
+	--col.table_schema = s.name 
+		--and col.table_name = o.name 
+		--and col.COLUMN_NAME=c.name
+	left join {{db_name}}.sys.indexes i on 
+		i.object_id = o.object_id 
+		and i.is_primary_key = 1
+	left join {{db_name}}.sys.index_columns ic on 
+		ic.object_id = o.object_id 
+		and ic.column_id = c.column_id
+where 
+	isnull(s.name,'''') not in ( ''sys'', ''INFORMATION_SCHEMA'', ''guest'') 
+	and isnull(s.name,'''') not like ''db[_]%''
+	and db.name not in (''master'',''model'',''msdb'',''tempdb'')
+
+union all 
+
+select null, suser_sid()
+	,  dbo.server_type()
+	, @@SERVERNAME server_name 
+	, db_name()
+	, null
+	, suser_sname() 
+	, 60 -- user
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+-- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+```
+',NULL,N'ddl','2021-03-29T21:07:28.417',N'AzureAD\BasvandenBerg')
+ ,(6300,N'ingest_obj_tree_ms_sql_server',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+-- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
+
+declare @obj_tree_param ObjTreeTableParam 
+
+with obj_tree_query as ( 
+	select 
+		null src_obj_id
+		, isnull(o.object_id, db.database_id) external_obj_id 
+		,  dbo.server_type() server_type 
+		, @@SERVERNAME server_name 
+		, db.name db_name
+		, s.name [schema_name]
+		, o.name as obj_name 
+		, case 
+				when o.type = ''U'' then 10 
+				when o.type = ''V'' then 20 
+				when s.name is not null then 30
+				when db.name is not null then 40 
+				else 50 -- server
+		  end obj_type_id 
+		, c.column_id ordinal_position
+		, c.name column_name
+		, null column_type_id
+		, c.is_nullable is_nullable
+		, t.name data_type 
+		, c.max_length max_len
+		--, case when DATA_TYPE in (''int'', ''bigint'', ''smallint'', ''tinyint'', ''bit'') then cast(null as int) else numeric_precision end numeric_precision
+		, convert(tinyint, CASE -- int/decimal/numeric/real/float/money  
+		  WHEN c.system_type_id IN (48, 52, 56, 59, 60, 62, 106, 108, 122, 127) THEN c.precision  
+		  END)          AS NUMERIC_PRECISION
+		, convert(int, CASE -- datetime/smalldatetime  
+		  WHEN c.system_type_id IN (40, 41, 42, 43, 58, 61) THEN NULL  
+		  ELSE ODBCSCALE(c.system_type_id, c.scale) END) AS NUMERIC_SCALE
+		, case when ic.is_descending_key=0 then ''ASC''when ic.is_descending_key=1 then ''DESC''else null end [primary_key_sorting]
+		, convert(nvarchar(4000),  
+		  OBJECT_DEFINITION(c.default_object_id))   AS [default_value]
+		, null _source
+	from 
+		{{db_name}}.sys.databases db
+		left join {{db_name}}.sys.schemas s on db.name = ''{{db_name}}''
+		left join {{db_name}}.sys.objects o on o.schema_id = s.schema_id
+		and o.type in ( ''U'',''V'') -- only tables and views
+		and o.object_id not in 
+			(
+			select major_id 
+			from {{db_name}}.sys.extended_properties  
+			where name = N''microsoft_database_tools_support'' 
+			and minor_id = 0 and class = 1) -- exclude ssms diagram objects
+		left join {{db_name}}.sys.columns c on c.object_id = o.object_id 
+		left join {{db_name}}.sys.types t on c.user_type_id = t.user_type_id 
+		--  = s.name and col.table_name = o.name
+		--	left join {{db_name}}.sys.columns col on 
+		--col.table_schema = s.name 
+			--and col.table_name = o.name 
+			--and col.COLUMN_NAME=c.name
+		left join {{db_name}}.sys.indexes i on 
+			i.object_id = o.object_id 
+			and i.is_primary_key = 1
+		left join {{db_name}}.sys.index_columns ic on 
+			ic.object_id = o.object_id 
+			and ic.column_id = c.column_id
+	where 
+		isnull(s.name,'''') not in ( ''sys'', ''INFORMATION_SCHEMA'', ''guest'') 
+		and isnull(s.name,'''') not like ''db[_]%''
+		and db.name not in (''master'',''model'',''msdb'',''tempdb'')
+
+	union all 
+
+	select null, suser_sid()
+		,  dbo.server_type()
+		, @@SERVERNAME server_name 
+		, ''{{db_name}}''
+		, null
+		, suser_sname() 
+		, 60 -- user
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+		, null
+) 
+
+insert into @obj_tree_param 
+select  *
+from obj_tree_query
+
+exec [dbo].[ingest_obj_tree] @obj_tree_param
+
+-- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+',NULL,N'ddl','2021-03-29T21:37:10.250',N'AzureAD\BasvandenBerg')
+) AS [Source] ([template_id],[template_name],[template_code],[template_description],[template_type],[_record_dt],[_record_name])
 ON ([Target].[template_id] = [Source].[template_id])
 WHEN MATCHED AND (
 	NULLIF([Source].[template_name], [Target].[template_name]) IS NOT NULL OR NULLIF([Target].[template_name], [Source].[template_name]) IS NOT NULL OR 
 	NULLIF([Source].[template_code], [Target].[template_code]) IS NOT NULL OR NULLIF([Target].[template_code], [Source].[template_code]) IS NOT NULL OR 
 	NULLIF([Source].[template_description], [Target].[template_description]) IS NOT NULL OR NULLIF([Target].[template_description], [Source].[template_description]) IS NOT NULL OR 
+	NULLIF([Source].[template_type], [Target].[template_type]) IS NOT NULL OR NULLIF([Target].[template_type], [Source].[template_type]) IS NOT NULL OR 
 	NULLIF([Source].[_record_dt], [Target].[_record_dt]) IS NOT NULL OR NULLIF([Target].[_record_dt], [Source].[_record_dt]) IS NOT NULL OR 
 	NULLIF([Source].[_record_name], [Target].[_record_name]) IS NOT NULL OR NULLIF([Target].[_record_name], [Source].[_record_name]) IS NOT NULL) THEN
  UPDATE SET
   [template_name] = [Source].[template_name], 
   [template_code] = [Source].[template_code], 
   [template_description] = [Source].[template_description], 
+  [template_type] = [Source].[template_type], 
   [_record_dt] = [Source].[_record_dt], 
   [_record_name] = [Source].[_record_name]
 WHEN NOT MATCHED BY TARGET THEN
- INSERT([template_id],[template_name],[template_code],[template_description],[_record_dt],[_record_name])
- VALUES([Source].[template_id],[Source].[template_name],[Source].[template_code],[Source].[template_description],[Source].[_record_dt],[Source].[_record_name])
+ INSERT([template_id],[template_name],[template_code],[template_description],[template_type],[_record_dt],[_record_name])
+ VALUES([Source].[template_id],[Source].[template_name],[Source].[template_code],[Source].[template_description],[Source].[template_type],[Source].[_record_dt],[Source].[_record_name])
 WHEN NOT MATCHED BY SOURCE THEN 
  DELETE
 ;
@@ -459,7 +645,5 @@ GO
 
 SET NOCOUNT OFF
 GO
-
-
 
 
