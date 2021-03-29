@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseName>sqldb-betl-o</TargetDatabaseName>
+    <DeployScriptFileName>sqldb_betl.sql</DeployScriptFileName>
+    <TargetConnectionString>Data Source=sqls-betl-o.database.windows.net;Persist Security Info=True;User ID=sqls-betl-o-admin-bas;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False</TargetConnectionString>
+    <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
+    <DatabaseEdition>Basic</DatabaseEdition>
+    <DatabaseServiceObjective>Basic</DatabaseServiceObjective>
+    <DatabaseMaximumSize>2</DatabaseMaximumSize>
+    <CreateNewDatabase>False</CreateNewDatabase>
+    <ProfileVersionNumber>1</ProfileVersionNumber>
+    <ScriptDatabaseOptions>False</ScriptDatabaseOptions>
+  </PropertyGroup>
+</Project>

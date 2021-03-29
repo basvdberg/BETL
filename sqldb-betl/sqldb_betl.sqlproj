@@ -298,6 +298,7 @@
     <None Include="data\PostDeployment.StaticTablesList.sql" />
     <None Include="comp_sqldb_with_project.scmp" />
     <None Include="sqldb_betl.publish.xml" />
+    <None Include="sqldb_betl_azure.publish.publish.xml" />
   </ItemGroup>
   <ItemGroup>
     <ArtifactReference Include="$(DacPacRootPath)\Extensions\Microsoft\SQLDB\Extensions\SqlServer\AzureV12\SqlSchemas\master.dacpac">
