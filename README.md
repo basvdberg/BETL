@@ -2,6 +2,9 @@
 
 BETL is a data warehouse automation framework. I allows you to generate ETL and DDL. Orchestration needs an ETL tool, but you can use the BETL meta data to build a generic orchestration process. 
 
+Go directly to https://github.com/basvdberg/BETL/wiki/1.-Installation or https://github.com/basvdberg/BETL/wiki/2.-Getting-started
+
+
 ![BETL Components](https://github.com/basvdberg/BETL-Core/blob/main/image/betl_overview.png)
 
 ## What is BETL
