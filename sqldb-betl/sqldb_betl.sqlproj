@@ -253,7 +253,6 @@
     <Build Include="dbo\Stored Procedures\setup.sql" />
     <Build Include="dbo\Stored Procedures\setp_obj_id.sql" />
     <Build Include="static\Tables\Column_enriched.sql" />
-    <Build Include="static\Views\column_enriched_ext.sql" />
     <Build Include="dbo\Stored Procedures\get_transfer_list.sql" />
     <Build Include="dbo\Stored Procedures\enrich_columns.sql" />
     <Build Include="static\Tables\Rule.sql" />
@@ -278,8 +277,6 @@
     <Build Include="dbo\Tables\Col_map.sql" />
     <Build Include="dbo\Tables\Col_def.sql" />
     <Build Include="dbo\Views\Obj_tree_ms_sql_server.sql" />
-    <Build Include="dbo\Sequences\seq_Obj_mapping.sql" />
-    <Build Include="dbo\Sequences\seq_Obj_def.sql" />
     <None Include="data\betl\static.Column.sql" />
     <Build Include="data\sp\sp_execute_cd_script.sql" />
     <Build Include="data\sp\sp_generate_merge.sql" />

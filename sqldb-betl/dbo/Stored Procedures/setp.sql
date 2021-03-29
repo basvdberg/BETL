@@ -51,8 +51,9 @@ begin
   begin 
 	if @property_scope = 'user' -- then create obj_id 
 	begin
-		insert into dbo.Obj (obj_type_id, obj_name) 
-		values (60, @full_obj_name)
+		insert into dbo.Obj (obj_type_id, obj_name, parent_id, server_type_id ) 
+		values (60, @full_obj_name, 10, dbo.server_type())
+		-- 10 is localhost
 			
 		exec [dbo].[get_obj_id] @full_obj_name, @obj_id output, @transfer_id=@transfer_id	
 	end

@@ -1,5 +1,5 @@
 ﻿CREATE SEQUENCE [dbo].[seq_Obj]
     AS BIGINT
-    START WITH 0
+    START WITH 100
     INCREMENT BY 1;
 

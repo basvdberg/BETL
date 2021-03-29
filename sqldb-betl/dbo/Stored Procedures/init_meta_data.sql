@@ -61,8 +61,6 @@ begin
 	-- begin dbo.Batch
 	-- EXEC sp_generate_merge @schema = 'dbo', @table_name ='Batch'
 	SET IDENTITY_INSERT [dbo].[Batch] ON
-	
-
 	MERGE INTO [dbo].[Batch] AS [Target]
 	USING (VALUES
 	  (-1,N'unknown','2020-02-20T13:15:22.257',NULL,-1,-1,-1,N'unknown',N'unknown',N'unknown',NULL,0,NULL,NULL)
@@ -155,18 +153,16 @@ begin
 	WHEN NOT MATCHED BY TARGET THEN
 	 INSERT([transfer_id],[batch_id],[transfer_name],[src_obj_id],[trg_obj_id],[trg_obj_name],[transfer_start_dt],[transfer_end_dt],[status_id],[rec_cnt_src],[rec_cnt_new],[rec_cnt_changed],[rec_cnt_deleted],[rec_cnt_undeleted],[last_error_id],[prev_transfer_id],[transfer_seq],[guid],[_record_dt],[_record_user])
 	 VALUES([Source].[transfer_id],[Source].[batch_id],[Source].[transfer_name],[Source].[src_obj_id],[Source].[trg_obj_id],[Source].[trg_obj_name],[Source].[transfer_start_dt],[Source].[transfer_end_dt],[Source].[status_id],[Source].[rec_cnt_src],[Source].[rec_cnt_new],[Source].[rec_cnt_changed],[Source].[rec_cnt_deleted],[Source].[rec_cnt_undeleted],[Source].[last_error_id],[Source].[prev_transfer_id],[Source].[transfer_seq],[Source].[guid],[Source].[_record_dt],[Source].[_record_user])
-	WHEN NOT MATCHED BY SOURCE THEN 
-	 DELETE
 	;
 	-- END dbo.Transfer
 
-	
 	-- BEGIN dbo.Obj
 	-- EXEC sp_generate_merge @schema = 'dbo', @table_name ='Obj'
 	MERGE INTO [dbo].[Obj] AS [Target]
 	USING (VALUES
-	  (-1,N'unknown',10,-1,NULL,NULL,null,NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
+	  (-1,N'unknown',10,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
 	 ,(10,N'localhost',50,NULL,NULL,NULL, dbo.server_type(),NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
+	 ,(20, suser_sname()  ,60, 10,NULL, NULL, dbo.server_type(),NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
 	) AS [Source] ([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[external_obj_id],[_create_dt],[_delete_dt],[_transfer_id],[_record_dt],[_record_user])
 	ON ([Target].[obj_id] = [Source].[obj_id])
 	WHEN MATCHED AND (
@@ -202,8 +198,6 @@ begin
 	WHEN NOT MATCHED BY TARGET THEN
 	 INSERT([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[external_obj_id],[_create_dt],[_delete_dt],[_transfer_id],[_record_dt],[_record_user])
 	 VALUES([Source].[obj_id],[Source].[obj_name],[Source].[obj_type_id],[Source].[parent_id],[Source].[prefix],[Source].[obj_name_no_prefix],[Source].[server_type_id],[Source].[identifier],[Source].[src_obj_id],[Source].[external_obj_id],[Source].[_create_dt],[Source].[_delete_dt],[Source].[_transfer_id],[Source].[_record_dt],[Source].[_record_user])
-	WHEN NOT MATCHED BY SOURCE THEN 
-	 DELETE
 	;
 	-- END dbo.Obj
 

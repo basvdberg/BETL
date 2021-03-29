@@ -2,7 +2,7 @@
 /*------------------------------------------------------------------------------------------------
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
 --------------------------------------------------------------------------------------------------
--- 2012-03-21 BvdB reset (user bound) properties
+-- 2012-03-21 BvdB reset (user bound) properties.  For example the log level. 
 exec dbo.reset 
 */
 CREATE PROCEDURE [dbo].[reset]  
@@ -22,8 +22,6 @@ begin
 --	exec dbo.log @transfer_id, 'INFO', 'AFTER reset'
 	--exec dbo.my_info @transfer_id
 	exec util.[trunc] 'dbo.Stack'
-
-
 
 	footer:
 	exec dbo.log @transfer_id, 'footer', 'DONE ? ', @proc_name 
