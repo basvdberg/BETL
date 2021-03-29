@@ -1,6 +1,6 @@
-# BETL Core
+# BETL
 
-BETL Core is a data warehouse automation framework. 
+BETL is a data warehouse automation framework. 
 
 ![BETL Components](https://github.com/basvdberg/BETL-Core/blob/main/image/betl_overview.png)
 
