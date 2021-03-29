@@ -18,7 +18,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 * A DWH architecture (e.g. staging-> raw dwh -> integrated dwh -> datamart ). 
 * dependent ( e.g. dependend on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
 * Restrictive ( all or nothing. You can choose which functionality you require in your project.)
-* Visual (currently it's only T-SQL. My next focus would be to build a meta data gui)
+* Visual (currently it's only T-SQL. My next focus would be to build a [meta data gui](https://github.com/basvdberg/BetlApp) )
 
 ## Main reasons for using BETL
  * Improve your productivity. However you need to invest some time to get to know BETL. 
@@ -39,6 +39,6 @@ BETL can be used standalone or combined with Azure data factory or SSIS.
 
 ## Related projects
 
- * I am working on a graphical user interface for the mapping meta data. However this is still work in progress. A good workaround is to contruct the mapping and orchestration meta data using views. 
+ * I am working on a [graphical user interface](https://github.com/basvdberg/BetlApp) for the mapping meta data. However this is still work in progress. A good workaround is to construct the mapping and orchestration meta data using views. 
  * The [previous version of BETL](https://github.com/basvdberg/BETL-old) was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. Most of the template code is contained in a large stored procedure called push. 
 
