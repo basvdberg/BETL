@@ -10,6 +10,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 ## What is BETL
 * Free, open source, GNU GPL
 * Meta data driven
+* 100 % T-SQL
 * Generic (usable in many different data warehousing scenarios)
 
 ## What is BETL not
