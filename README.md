@@ -16,7 +16,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 ## What is BETL not
 * A modeling method (e.g. Datavault, Kimball or Anchor modeling)
 * A DWH architecture (e.g. staging-> raw dwh -> integrated dwh -> datamart ). 
-* dependent ( e.g. dependend on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
+* dependent ( e.g. dependent on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
 * Restrictive ( all or nothing. You can choose which functionality you require in your project.)
 * Visual (currently it's only T-SQL. My next focus would be to build a [meta data gui](https://github.com/basvdberg/BetlApp) )
 
