@@ -20,7 +20,7 @@ select * from util.parse_sql(@sql)
 CREATE function [util].[parse_sql] (@sql VARCHAR(MAX)
   ) RETURNS @List TABLE (item VARCHAR(8000), i int)
 BEGIN
-	declare @transfer_id as int = -1
+	declare @batch_id as int = -1
 
 	-- END standard BETL header code... 
 	--set nocount on 
@@ -37,7 +37,7 @@ BEGIN
 	set @i = charindex('FROM', @sql, 0) 
 	if isnull(@i,0) =0 
 	begin
-		--exec dbo.log @transfer_id, 'ERROR', 'no from found in sql query ?', @sql
+		--exec dbo.log @batch_id, 'ERROR', 'no from found in sql query ?', @sql
 		--print 'no from found in sql query ?'
 		goto footer
 	end
@@ -72,10 +72,10 @@ BEGIN
 	from q 
 	where len(item)>0
 	
-	--exec dbo.log @transfer_id, 'VAR', '@from_clause ?', @from_clause
---	exec dbo.log @transfer_id, 'VAR', '@select_clause ?', @select_clause
+	--exec dbo.log @batch_id, 'VAR', '@from_clause ?', @from_clause
+--	exec dbo.log @batch_id, 'VAR', '@select_clause ?', @select_clause
  
 	footer:
- 	--exec dbo.log @transfer_id, 'footer', 'DONE ?', @proc_name 
+ 	--exec dbo.log @batch_id, 'footer', 'DONE ?', @proc_name 
 	return
 END

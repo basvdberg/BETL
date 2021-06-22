@@ -14,7 +14,7 @@ exec get_user_vars @log_level output, @exec_sql output
 CREATE PROCEDURE [dbo].[get_user_vars] 
 	@log_level varchar(255) output
 	, @exec_sql bit output
-	, @transfer_id as int = -1
+	, @batch_id as int = -1
 as
 
 BEGIN
@@ -25,7 +25,7 @@ BEGIN
 		@proc_name as varchar(255) = object_name(@@PROCID)
 		, @cache_hit as bit=0;
 	-- prevent cyclic error
-	--exec dbo.log @transfer_id, 'header_detail', '?', @proc_name
+	--exec dbo.log @batch_id, 'header_detail', '?', @proc_name
 	-- END standard BETL header code... 
 	begin try
 	begin transaction 
@@ -65,7 +65,7 @@ BEGIN
 	-- standard BETL footer code... 
     --footer:
 	-- prevent cyclic error
-	--exec dbo.log @transfer_id, 'footer_detail', 'DONE ?', @proc_name 
+	--exec dbo.log @batch_id, 'footer_detail', 'DONE ?', @proc_name 
 	-- END standard BETL footer code... 
 	return 1
 END

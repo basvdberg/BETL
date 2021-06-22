@@ -17,7 +17,7 @@
     [_chksum]              VARBINARY (20) NULL,
     [_record_dt]           DATETIME       CONSTRAINT [DF__Col_hist__record__2764BD12] DEFAULT (getdate()) NULL,
     [_record_user]         [sysname]      CONSTRAINT [DF__Col_hist__record__2858E14B] DEFAULT (suser_sname()) NULL,
-    [_transfer_id]         INT            NULL,
+    [_batch_id]         INT            NULL,
     CONSTRAINT [PK__Hst_column] PRIMARY KEY CLUSTERED ([column_id] DESC, [_eff_dt] DESC),
     CONSTRAINT [FK_Col_h_Obj] FOREIGN KEY ([obj_id]) REFERENCES [dbo].[Obj] ([obj_id]),
     CONSTRAINT [FK_Col_hist_Column_type] FOREIGN KEY ([column_type_id]) REFERENCES [static].[Column_type] ([column_type_id])

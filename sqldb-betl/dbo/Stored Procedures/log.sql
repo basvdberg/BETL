@@ -24,9 +24,9 @@ CREATE PROCEDURE [dbo].[log](
 AS
 BEGIN
 	SET NOCOUNT ON;
-	set @batch_id = isnull(@batch_id,-1) -- default for unknown transfer_id is -1 
+	set @batch_id = isnull(@batch_id,-1) -- default for unknown batch_id is -1 
 	--declare @batch_id as int
-	--exec dbo.getp 'transfer_id', @batch_id output 
+	--exec dbo.getp 'batch_id', @batch_id output 
 	declare @log_level_id smallint
 			, @log_type_id smallint
 			, @nesting smallint
@@ -142,7 +142,7 @@ BEGIN
 		
 		-- troubleshoot foreign key error !
 		if @batch_id=0 
-			print '--ERROR transfer_id should not be 0. Use -1 for unknown transfer_id !'
+			print '--ERROR batch_id should not be 0. Use -1 for unknown batch_id !'
 
 		insert into dbo.Logging
 		values( getdate(), @msg, @batch_id, @batch_id, @log_level_id, @log_type_id, @exec_sql) 

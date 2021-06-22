@@ -112,7 +112,6 @@ begin
 		goto footer
 	end 
 
-
 	-- test ordinal_position is unique
 	if exists ( 
 		select ordinal_position, count(*) 
@@ -130,57 +129,6 @@ begin
 		--RAISERROR(@msg , 15 , 0)  WITH NOWAIT
 		goto footer
 	end 
-
-
-/*
-	set @template = '
--- begin select rdw columns 100 and 300 from {{schema_name}}.{{obj_name}}[{{obj_id}}]
-SELECT
-{{#each columns}}
-	 {{#if column_type_id in (100,300)}}
-	  [{{column_name}}]{{#unless @last}},{{/unless}}
-	 {{/endif}}
-{{/each}}
-FROM staging.[{{obj_name}}]
-EXCEPT
-SELECT
-{{#each columns}}
-	 {{#if column_type_id in (100,300)}}
-	  [{{column_name}}]{{#unless @last}},{{/unless}}
-	 {{/endif}}
-{{/each}}
-FROM rdw.[{{obj_name}}]
--- end select rdw columns 100 and 300 from {{schema_name}}.{{obj_name}}[{{obj_id}}]
-'
-	/*
-	set @template =
-	'-- begin create table {{schema_name}}.{{obj_name}}[{{obj_id}}]
-	-- in our DEV invironment we just drop the target table. Of course this is not done in Test, Acceptance and Prod..
-	IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
-		DROP TABLE {{schema_name}}.{{obj_name}};
-
-	CREATE TABLE {{schema_name}}.{{obj_name}}(
-	{{#each columns}}
-	  {{column_name}} {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
-	{{/each}}
-	)
-
-	IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''PK_{{schema_name}}_{{obj_name}}_{{obj_id}}'')
-	ALTER TABLE {{schema_name}}.{{obj_name}} ADD CONSTRAINT
-		PK_{{schema_name}}_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
-		(
-		{{#each columns}}
-			{{#if primary_key_sorting}}
-				{{column_name}} {{primary_key_sorting}}
-				{{#unless @last}},{{/unless}}
-			{{/if}}
-		{{/each}}
-		) 
-
-	-- end create table {{schema_name}}.{{obj_name}}[{{obj_id}}]
-	'
-	*/
-	*/
 
 	select @template = template_code 
 	from static.template 
@@ -321,8 +269,7 @@ FROM rdw.[{{obj_name}}]
 				insert into #ast(node,s, type)  values ( @node, @value,  'const') 
 			end 
 		end
-
-		
+	
 		set @node_str = @node.ToString() 
 		set @parent_str = @parent.ToString()
 		exec log @batch_id, 'Progress', '?.?.?', @open_pos, @parent_str, @node_str
@@ -348,7 +295,6 @@ FROM rdw.[{{obj_name}}]
 	-- next map values to expressions in ast . this will transform the ast
 	-- when encountering an #each subtree we apply an iteration. we will substitute the tree with 
 	-- values 
- 
 	;
 	if object_id('tempdb..#result') is not null 
 		drop table #result
@@ -514,9 +460,9 @@ FROM rdw.[{{obj_name}}]
 
 	footer:
 
-	exec log @batch_id, 'debug', @output
+	--exec dbo.log @batch_id, 'debug', @output
 
-	if @output_result =1 
+	if isnull(@output_result,0) =1 
 		select @output _output 
 
 	--SELECT column_name 

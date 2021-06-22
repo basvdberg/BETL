@@ -11,7 +11,7 @@
     [external_obj_id]    INT            NULL,
     [_create_dt]         DATETIME       NULL,
     [_delete_dt]         DATETIME       NULL,
-    [_transfer_id]       INT            NULL,
+    [_batch_id]       INT            NULL,
     [_record_dt]         DATETIME       CONSTRAINT [DF_Obj_h_record_dt] DEFAULT (getdate()) NULL,
     [_record_user]       NVARCHAR (255) CONSTRAINT [DF_Obj_h_record_user] DEFAULT (suser_sname()) NULL,
     CONSTRAINT [PK_Obj] PRIMARY KEY CLUSTERED ([obj_id] ASC),

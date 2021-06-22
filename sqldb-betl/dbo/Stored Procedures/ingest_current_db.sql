@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------------------------
 -- 2021-03-29 BvdB ingest the object tree of the current database. 
 */
-create procedure [dbo].[ingest_current_db] 
+CREATE procedure [dbo].[ingest_current_db] 
 
 as 
 begin 
@@ -14,7 +14,7 @@ begin
 
 	-- standard BETL header code... 
 	set nocount on 
-	exec dbo.log_batch @batch_id, 'Header', '?(b?)', @proc_name , @batch_id
+	exec dbo.log @batch_id, 'Header', '?(b?)', @proc_name , @batch_id
 	-- END standard BETL header code... 
 
 	declare @obj_tree_param ObjTreeTableParam 
@@ -25,5 +25,5 @@ begin
 
 	exec [dbo].[ingest_obj_tree] @obj_tree_param
 
-	exec dbo.log_batch @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
+	exec dbo.log @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
 end

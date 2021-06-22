@@ -8,13 +8,13 @@ exec dbo.info
 */
 CREATE PROCEDURE [dbo].[info]
     @full_obj_name as varchar(255) =''
-	, @transfer_id as int = -1
+	, @batch_id as int = -1
 AS
 BEGIN
 	-- standard BETL header code... 
 	set nocount on 
 	declare  @proc_name as varchar(255) =  object_name(@@PROCID);
-	exec dbo.log @transfer_id, 'header', '? ? ? ?', @proc_name , @full_obj_name,  @transfer_id
+	exec dbo.log @batch_id, 'header', '? ? ? ?', @proc_name , @full_obj_name,  @batch_id
 	-- END standard BETL header code... 
 	declare @obj_id as int
 			, @obj_name as varchar(255) 
@@ -24,7 +24,7 @@ BEGIN
 	--if @obj_id is null 
 	--	exec show_error 'Object ? not found ', @full_obj_name
 	--else 
-	--	exec dbo.log @transfer_id, 'INFO', 'obj_id ?', @obj_id 
+	--	exec dbo.log @batch_id, 'INFO', 'obj_id ?', @obj_id 
 	print 'test'	
 	set @search = replace (@full_obj_name, @@SERVERNAME , 'LOCALHOST') 
 	declare @replacer as ParamTable
@@ -35,7 +35,7 @@ BEGIN
 	SELECT @search = REPLACE(@search, param_name, convert(varchar(255), param_value) )
 	FROM @replacer;
 	set @search  ='%%'+ @search +'%%'
-	exec dbo.log @transfer_id, 'step', 'Searching ?', @search 
+	exec dbo.log @batch_id, 'step', 'Searching ?', @search 
 	declare @objects Table(
 		obj_id int primary key
 	) 
@@ -70,5 +70,5 @@ BEGIN
 	order by p.obj_id, p.property
 
     footer:
-	exec dbo.log @transfer_id, 'footer', 'DONE ? ? ? ?', @proc_name , @full_obj_name, @transfer_id
+	exec dbo.log @batch_id, 'footer', 'DONE ? ? ? ?', @proc_name , @full_obj_name, @batch_id
 END

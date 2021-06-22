@@ -3,7 +3,7 @@
 /*------------------------------------------------------------------------------------------------
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
 --------------------------------------------------------------------------------------------------
--- 2019-12-05 BvdB wrapper to write batch related logging. first param is batch_id instead of transfer_id
+-- 2019-12-05 BvdB wrapper to write batch related logging. first param is batch_id instead of batch_id
 */
 CREATE PROCEDURE [dbo].[log_batch](
 --	  @log_level smallint
@@ -23,16 +23,17 @@ CREATE PROCEDURE [dbo].[log_batch](
 AS
 BEGIN
 	SET NOCOUNT ON;
-	exec dbo.log -1,@log_type 
-		, @msg 
-		, @i1 
-		, @i2 
-		, @i3 
-		, @i4 
-		, @i5 
-		, @i6 
-		, @i7 
-		, @simple_mode 
-		, @batch_id 
+	exec dbo.log 
+	    @log_type =@log_type
+		, @msg =@msg 
+		, @i1 =@i1 
+		, @i2 = @i2 
+		, @i3 = @i3
+		, @i4 = @i4
+		, @i5 = @i5
+		, @i6 = @i6
+		, @i7 = @i7
+		, @simple_mode = @simple_mode 
+		, @batch_id = @batch_id 
 
 END
