@@ -11,7 +11,7 @@ select dbo.obj_id('BETL', null) --> points to db
 select dbo.obj_id'', null) --> points to db
 select * from dbo.Obj
 */
-CREATE FUNCTION [dbo].[obj_id]( @fullObj_name sysname ) 
+CREATE FUNCTION [dbo].[obj_id]( @full_obj_name sysname ) 
 RETURNS int
 AS
 BEGIN
@@ -28,7 +28,7 @@ BEGIN
 	
 	insert into @t 
 	select replace(replace(item, '[',''),']','') item, i 
-	from util.split(@fullObj_name , '.') 
+	from util.split(@full_obj_name , '.') 
 	--select * from @t 
 	-- @t contains elemenents of fullObj_name 
 	-- can be [server].[db_name].[schema_name].[table|view]
@@ -56,7 +56,7 @@ BEGIN
 	(
 		o._delete_dt is null 
 		and o.obj_type_id=60 -- user
-		and o.obj_name = @fullObj_name
+		and o.obj_name = @full_obj_name
 	) 
 
 	

@@ -4,12 +4,11 @@
 --------------------------------------------------------------------------------------------------
 -- 2012-03-21 BvdB write to [dbo].[Transfer_log] using log hierarchy
 exec dbo.log 30820, 'error', 'test'
-exec dbo.log @transfer_id =30820, @log_type ='error', @msg ='test', @simple_mode =1
+exec dbo.log @batch_id =30820, @log_type ='error', @msg ='test', @simple_mode =1
 */
 CREATE PROCEDURE [dbo].[log](
---	  @log_level smallint
-	@transfer_id as int=-1
-	 ,@log_type varchar(50)  -- ERROR, WARN, INFO, DEBUG
+	@batch_id as int =-1
+	, @log_type varchar(50)  -- ERROR, WARN, INFO, DEBUG
 	, @msg as varchar(max) 
 	, @i1 as varchar(max) = null
 	, @i2 as varchar(max) = null
@@ -19,15 +18,15 @@ CREATE PROCEDURE [dbo].[log](
 	, @i6 as varchar(max)= null
 	, @i7 as varchar(max)= null
 	, @simple_mode as bit = 0 -- use this to skip getp and prevent getting into a loop. 
-	, @batch_id as int =-1
+	
 
 )
 AS
 BEGIN
 	SET NOCOUNT ON;
-	set @transfer_id = isnull(@transfer_id,-1) -- default for unknown transfer_id is -1 
-	--declare @transfer_id as int
-	--exec dbo.getp 'transfer_id', @transfer_id output 
+	set @batch_id = isnull(@batch_id,-1) -- default for unknown transfer_id is -1 
+	--declare @batch_id as int
+	--exec dbo.getp 'transfer_id', @batch_id output 
 	declare @log_level_id smallint
 			, @log_type_id smallint
 			, @nesting smallint
@@ -129,11 +128,11 @@ BEGIN
 --	ELSE
 --		RAISERROR(@msg,10,1) WITH NOWAIT
 	-- START CUSTOM_CODE. 
-	--exec MyDWH_repository.dbo.SP_SSIS_LOGMSG @transfer_id, @msg
+	--exec MyDWH_repository.dbo.SP_SSIS_LOGMSG @batch_id, @msg
 	-- END CUSTOM_CODE
 	if @log_type = 'ERROR'
 	begin
-		exec dbo.log_error @transfer_id, @msg, 15, @batch_id
+		exec dbo.log_error @batch_id, @msg, 15, @batch_id
 		--SET @short_msg = substring(@msg, 0, 255) 
 		--RAISERROR( @short_msg ,15,1) WITH SETERROR
 	end 
@@ -142,11 +141,11 @@ BEGIN
 		PRINT cast(@msg as text) -- because print is limited to 8000 characters
 		
 		-- troubleshoot foreign key error !
-		if @transfer_id=0 
+		if @batch_id=0 
 			print '--ERROR transfer_id should not be 0. Use -1 for unknown transfer_id !'
 
 		insert into dbo.Logging
-		values( getdate(), @msg, @transfer_id, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
+		values( getdate(), @msg, @batch_id, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
 	end 
 
     footer:
