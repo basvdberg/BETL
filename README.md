@@ -12,6 +12,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 * Meta data driven
 * 100 % T-SQL
 * Generic (usable in many different data warehousing scenarios)
+* Real time code generator (in contrast to design time code generators like e.g. BIML). Changes to meta data and templates are effective immediately. There is no need to build or deploy anything in your development environment. 
 
 ## What is BETL not
 * A modeling method (e.g. Datavault, Kimball or Anchor modeling)
@@ -19,6 +20,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 * Dependent ( e.g. dependent on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
 * Restrictive ( all or nothing. You can choose which functionality you require in your project.)
 * Visual (currently it's only T-SQL. My next focus would be to build a [meta data gui](https://github.com/basvdberg/BetlApp) )
+* Finished. Although I spent many hours on BETL, there are still some loose ends. You are very welcome to help. 
 
 ## Main reasons for using BETL
  * Improve your productivity. However you need to invest some time to get to know BETL. 
