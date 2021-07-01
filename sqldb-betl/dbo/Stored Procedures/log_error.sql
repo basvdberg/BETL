@@ -8,27 +8,23 @@ exec dbo.log_error -1, 'Something went wrong', 11 , 0, 0, 'aap'
 */
 CREATE PROCEDURE [dbo].[log_error](
 	    --@batch_id as int
-		@batch_id as int
+		@batch_id as int = -1
 		, @msg as varchar(255) 
 		, @severity as int 
 		, @number as int = null 
 		, @line as int = null 
 		, @procedure as varchar(255) = null
-		, @batch_id as int = -1
 		)
 AS
 BEGIN
 	SET NOCOUNT ON;
 	declare @sp_name as varchar(255) = object_name(@@PROCID)
 	
-	if @batch_id = -1 
-		select @batch_id = batch_id from dbo.Transfer where batch_id = @batch_id 
-	
 	set @msg = '-- Error: '+ convert(varchar(255), isnull(@msg,'')) 
 	print @msg
 
-	insert into dbo.Logging(log_dt, msg, batch_id,log_type_id, batch_id)
-	values( getdate(), @msg, @batch_id, 50, @batch_id ) 
+	insert into dbo.Logging(log_dt, msg, batch_id,log_type_id)
+	values( getdate(), @msg, @batch_id, 50) 
 
 --	exec dbo.log @batch_id, 'header', '?(?) severity ? ?', @sp_name ,@batch_id, @severity, @msg
     INSERT INTO [dbo].[Error]([error_code],[error_msg],[error_line],[error_procedure],[error_severity],[batch_id]) 

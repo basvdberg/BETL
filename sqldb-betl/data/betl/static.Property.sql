@@ -24,7 +24,7 @@ USING (VALUES
  ,(200,N'proc_max_wait_time_min',0,N'how long should we wait for a proc to finish when proc_max_cnt is reached. default 10 minutes. please increase this value for big datasets!',N'user',N'10',NULL,NULL,NULL,NULL,NULL,'2019-01-25T12:27:24.543',N'')
  ,(210,N'proc_polling_interval_sec',0,N'wait polling interval. How long till we check again. range: 1-59 . Too low might affect performance because every time we query  msdb.dbo.sysjobs',N'user',N'2',NULL,NULL,NULL,NULL,NULL,'2019-01-25T12:29:17.060',N'')
  ,(220,N'proc_dead_time_sec',0,N'delete jobs that are created more than @proc_dead_time_sec ago and are not running. ',N'user',N'60',NULL,NULL,NULL,NULL,NULL,'2019-01-25T12:40:13.197',N'')
- ,(230,N'batch_dead_time_min',1,N'after this period of inactivity the batch will be seen as dead and will be stopped if running. ',N'user',N'0',NULL,NULL,NULL,NULL,NULL,'2019-11-20T10:26:00.060',N'bas')
+ ,(230,N'batch_max_lifetime',1,N'after this period of inactivity the batch will be seen as dead and will be stopped if running. ',N'user',N'0',NULL,NULL,NULL,NULL,NULL,'2019-11-20T10:26:00.060',N'bas')
  ,(240,N'include_staging',1,N'include this source system table or view in Staging',N'db_object',NULL,1,1,1,1,NULL,'2019-12-04T08:21:22.433',N'')
  ,(250,N'layer',0,N'dwh layer. e.g. staging, rdw, idw, datamart',N'db_object',NULL,NULL,NULL,1,1,NULL,'2019-12-10T18:09:12.287',N'')
  ,(260,N'source',1,N'short name for e.g. a source database. used as prefix in staging',N'db_object',NULL,1,1,1,1,1,'2020-04-03T10:53:39.070',N'')

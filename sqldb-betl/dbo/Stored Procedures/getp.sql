@@ -7,9 +7,9 @@ declare @value varchar(255)
 exec dbo.getp 'log_level', @Value output 
 print 'loglevel' + isnull(@Value,'?')
 
-declare @batch_dead_time_min as varchar(255) -- after this period of inactivity the batch will be seen as stopped.. 
-exec dbo.getp 'batch_dead_time_min', @batch_dead_time_min output
-print @batch_dead_time_min 
+declare @batch_max_lifetime as varchar(255) -- after this period of inactivity the batch will be seen as stopped.. 
+exec dbo.getp 'batch_max_lifetime', @batch_max_lifetime output
+print @batch_max_lifetime 
 
 
 select * from dbo.prop_ext
@@ -19,7 +19,6 @@ CREATE PROCEDURE [dbo].[getp]
 	, @value varchar(255) output 
 	, @full_obj_name varchar(255) = null -- when property relates to a persistent object, otherwise leave empty
 	, @batch_id as int = -1 -- use this for logging. 
-	, @batch_id as int = -1
 as
 begin
 	-- first determine scope 

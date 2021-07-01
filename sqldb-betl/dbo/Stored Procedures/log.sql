@@ -145,7 +145,7 @@ BEGIN
 			print '--ERROR batch_id should not be 0. Use -1 for unknown batch_id !'
 
 		insert into dbo.Logging
-		values( getdate(), @msg, @batch_id, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
+		values( getdate(), @msg, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
 	end 
 
     footer:

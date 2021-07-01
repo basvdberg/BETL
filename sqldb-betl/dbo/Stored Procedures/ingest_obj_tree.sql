@@ -46,7 +46,6 @@ begin
 		, @deleted as int=0
 		, @inserted as int =0 
 		, @status as varchar(255) = 'success'
-		, @batch_id as int 
 		, @proc_name as sysname =  object_name(@@PROCID)
 		, @now as datetime = getdate() -- all records the same timestamp so that you can join them easier. 
 		, @create_dt as datetime 
