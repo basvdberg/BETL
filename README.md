@@ -42,3 +42,4 @@ BETL can be used standalone or combined with Azure data factory or SSIS.
  * I am working on a [graphical user interface](https://github.com/basvdberg/BetlApp) for the mapping meta data. However this is still work in progress. A good workaround is to construct the mapping and orchestration meta data using views. 
  * The [previous version of BETL](https://github.com/basvdberg/BETL-old) was made for an on premise Microsoft environment and is being used by 2 large customers in the Netherlands. Most of the template code is contained in a large stored procedure called push. 
 
+Continue with [installation](https://github.com/basvdberg/BETL/wiki/1.-Installation) or [getting started](https://github.com/basvdberg/BETL/wiki/2.-Getting-started)
