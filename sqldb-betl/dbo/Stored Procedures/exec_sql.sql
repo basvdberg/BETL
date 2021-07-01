@@ -18,7 +18,7 @@ print @result
 -- =============================================
 */
 CREATE PROCEDURE [dbo].[exec_sql]
-	@transfer_id as int =0 
+	@batch_id as int =0 
 	, @sql as nvarchar(max)
 	, @trg_db_name as sysname =null 
 	, @async bit =0 -- set to 1 to run asynchronously 
@@ -40,7 +40,7 @@ BEGIN
 			, @cnt_proc as int = 0 
 			, @category_id as int 
 			, @cnt_procs as int
-			, @proc_name_pattern as varchar(255) = 'betl_proc_' -- +convert(varchar(255), @transfer_id) 
+			, @proc_name_pattern as varchar(255) = 'betl_proc_' -- +convert(varchar(255), @batch_id) 
 			, @wait_time_sec as int 
 			, @proc_max_wait_time_min as int 
 			, @proc_max_wait_time_sec as int 
@@ -59,7 +59,7 @@ BEGIN
 	if @trg_db_name is null 
 		set @trg_db_name = db_name()
 
-	--exec dbo.log @transfer_id, 'sql', @sql -- whether sql is logged is determined in usp log
+	--exec dbo.log @batch_id, 'sql', @sql -- whether sql is logged is determined in usp log
 
 	if @exec_sql =1 
 	begin
@@ -78,7 +78,7 @@ BEGIN
 				FETCH NEXT FROM cur INTO @sql_statement
 				WHILE @@FETCH_STATUS = 0  
 				BEGIN
-					exec log @transfer_id , 'sql', '? ? ' , @db_exec, @sql_statement
+					exec log @batch_id , 'sql', '? ? ' , @db_exec, @sql_statement
 					exec @result = @db_exec @sql_statement
 					if @result <> 0 
 						goto footer
@@ -114,7 +114,7 @@ BEGIN
 			    select @category_id = category_id from msdb.dbo.syscategories where category_class = 1 and category_type = 1 and name ='betl'
 				if @category_id is null 
 				begin 
-					exec dbo.log @transfer_id, 'ERROR', 'cannot create job category betl'
+					exec dbo.log @batch_id, 'ERROR', 'cannot create job category betl'
 					goto footer
 				end 
 					
@@ -137,8 +137,8 @@ BEGIN
 
 				if isnull(@tmp_sql,'')  <> ''
 				begin
-					exec dbo.log @transfer_id, 'info', @tmp_sql
-					exec [dbo].[exec_sql] @transfer_id, @tmp_sql, 'msdb'
+					exec dbo.log @batch_id, 'info', @tmp_sql
+					exec [dbo].[exec_sql] @batch_id, @tmp_sql, 'msdb'
 				end
 				-- try to create job, but wait for a proc to finish when @cnt_procs >= @proc_max_cnts (maximum @proc_max_wait_time_min seconds)
 				set @wait_time_sec = 0 
@@ -148,7 +148,7 @@ BEGIN
 
 				while @wait_time_sec < @proc_max_wait_time_sec and @cnt_procs >= @proc_max_cnt
 				begin 
-					exec dbo.log @transfer_id, 'PROGRESS', 'Waiting ? seconds for a process to finish', @proc_polling_interval_sec
+					exec dbo.log @batch_id, 'PROGRESS', 'Waiting ? seconds for a process to finish', @proc_polling_interval_sec
 					RAISERROR ('Waiting...', 0, 1) WITH NOWAIT
 					
 					WAITFOR DELAY @time_str 
@@ -159,14 +159,14 @@ BEGIN
 					where category_id = @category_id and name like @proc_name_pattern+ '%'
 				end 
 
-				exec dbo.log @transfer_id, 'INFO', 'procs ?,max ?,wait time ?,max ?, polling_interval ?', @cnt_procs, @proc_max_cnt, @wait_time_sec , @proc_max_wait_time_sec, @proc_polling_interval_sec
+				exec dbo.log @batch_id, 'INFO', 'procs ?,max ?,wait time ?,max ?, polling_interval ?', @cnt_procs, @proc_max_cnt, @wait_time_sec , @proc_max_wait_time_sec, @proc_polling_interval_sec
 				
 				if @cnt_procs < @proc_max_cnt
 				begin
 
 					-- create sql agent job 
-					set @job_name = @proc_name_pattern  + 	format(getdate(), 'yyyy_MM_dd_HH_mm_ss_') + convert(varchar(255), @transfer_id) + '_'+convert(Varchar(255), newid() ) 
-					exec dbo.log @transfer_id, 'INFO', 'create job ?', @job_name 
+					set @job_name = @proc_name_pattern  + 	format(getdate(), 'yyyy_MM_dd_HH_mm_ss_') + convert(varchar(255), @batch_id) + '_'+convert(Varchar(255), newid() ) 
+					exec dbo.log @batch_id, 'INFO', 'create job ?', @job_name 
 
 					BEGIN TRANSACTION
 					EXEC @result =  msdb.dbo.sp_add_job @job_name=@job_name, 
@@ -181,11 +181,11 @@ BEGIN
 							@job_id = @job_id OUTPUT
 					IF (@@ERROR <> 0 OR @result <> 0) 
 					begin
-						exec dbo.log @transfer_id, 'ERROR', 'Error creating job ? , ?', @job_name, @cnt_procs
+						exec dbo.log @batch_id, 'ERROR', 'Error creating job ? , ?', @job_name, @cnt_procs
 					end
 					else
 					begin 
-						exec dbo.log @transfer_id, 'INFO', 'Job ?(?) created. Other procs running: ?', @job_name, @job_id , @cnt_procs
+						exec dbo.log @batch_id, 'INFO', 'Job ?(?) created. Other procs running: ?', @job_name, @job_id , @cnt_procs
 					end 
 					
 					-- for some reason jobs. skip the set options of e.g. views. 
@@ -206,7 +206,7 @@ BEGIN
 						@flags=0
 					IF (@@ERROR <> 0 OR @result <> 0) 
 					begin
-						exec dbo.log @transfer_id, 'ERROR', 'Error creating job step exec sql for job ? ', @job_id
+						exec dbo.log @batch_id, 'ERROR', 'Error creating job step exec sql for job ? ', @job_id
 					end
 
 					set @tmp_sql = 'exec msdb.dbo.sp_delete_job @job_id=''' + convert(varchar(255),@job_id)+''''
@@ -222,7 +222,7 @@ BEGIN
 						@flags=0
 					IF (@@ERROR <> 0 OR @result <> 0) 
 					begin
-						exec dbo.log @transfer_id, 'ERROR', 'Error creating job step to delete myself for job ? ', @job_id
+						exec dbo.log @batch_id, 'ERROR', 'Error creating job step to delete myself for job ? ', @job_id
 					end
 
 					EXEC @result =  msdb.dbo.sp_add_jobserver @job_id=@job_id, 
@@ -233,12 +233,12 @@ BEGIN
 				
 					EXEC @result = msdb.dbo.sp_start_job @job_id=@job_id
 					if @result<> 0 
-						exec dbo.log @transfer_id, 'error', 'error starting job ? using msdb.dbo.sp_start_job. note that sp_start_job errors cannot be caught, but are printed when executed from ssms', @job_id
+						exec dbo.log @batch_id, 'error', 'error starting job ? using msdb.dbo.sp_start_job. note that sp_start_job errors cannot be caught, but are printed when executed from ssms', @job_id
 
 				end 
 				else
 				begin 
-					exec dbo.log @transfer_id, 'ERROR', 'Waited for ? seconds, but no process finished', @wait_time_sec
+					exec dbo.log @batch_id, 'ERROR', 'Waited for ? seconds, but no process finished', @wait_time_sec
 					goto footer
 				end
 */
@@ -254,7 +254,7 @@ print 'not supported in azure'
 				set @sev = ERROR_SEVERITY()
 				set @number = ERROR_NUMBER() 
 				IF @@trancount > 0 ROLLBACK TRANSACTION
-				exec dbo.log_error @transfer_id=@transfer_id, @msg=@msg,  @severity=@sev, @number=@number
+				exec dbo.log_error @batch_id=@batch_id, @msg=@msg,  @severity=@sev, @number=@number
 				print '-- exec_sql caught error in the following sql statement:'
 				print @sql_statement
 				if @result =0 

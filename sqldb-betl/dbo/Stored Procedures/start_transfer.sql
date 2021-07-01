@@ -3,8 +3,8 @@
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
 --------------------------------------------------------------------------------------------------
 -- 2012-12-21 BvdB create transfer if not exist 
-declare @batch_id int ,
-	@transfer_id int
+declare @batch_id int =-1 ,
+	@transfer_id int=-1
 exec dbo.start_transfer @batch_id output , @transfer_id output , 'test'
 select * from dbo.batch where batch_id = @batch_id 
 select * from dbo.transfer where transfer_id = @transfer_id
@@ -59,7 +59,7 @@ begin
 		values (@batch_id, @nu, @transfer_name, @trg_obj_name, @src_obj_id,   @trg_obj_id, @transfer_guid) 
 		select @transfer_id = SCOPE_IDENTITY()
 
-		exec dbo.log @transfer_id, 'Header', '? ?(?) (b?)', @proc_name , @transfer_name, @transfer_id , @batch_id
+		exec dbo.log @batch_id, 'Header', '? ?(?) (b?)', @proc_name , @transfer_name, @transfer_id , @batch_id
 
 /*
 		set @batch_name = isnull(@batch_name , isnull( @transfer_name ,'')) 
@@ -73,7 +73,7 @@ begin
 
 		if  @batch_id > 0 and @batch_is_running=0 -- batch must be in a running state or be a debug batch 
 		begin
-			exec dbo.log @transfer_id , 'warn', 'batch_id ? is not in a running state.', @batch_id
+			exec dbo.log @batch_id , 'warn', 'batch_id ? is not in a running state.', @batch_id
 			set @status = 'not started'
 			goto footer
 		end
@@ -113,7 +113,7 @@ begin
 				, @sev as int = ERROR_SEVERITY()
 				, @number as int = ERROR_NUMBER() 
 --		IF @@TRANCOUNT > 0  ROLLBACK TRANSACTION
-		exec dbo.log_error @transfer_id, @msg=@msg2,  @severity=@sev, @number=@number , @batch_id= @batch_id
+		exec dbo.log_error @transfer_id=@transfer_id, @msg=@msg2,  @severity=@sev, @number=@number , @batch_id= @batch_id
 	end catch 
 	
 	footer:
@@ -121,13 +121,13 @@ begin
 	if @status in ( 'error', 'not started', 'stopped') and @batch_id >0 
 	begin 
 		set @msg = 'failed to start transfer '+isnull(@msg,'')+ isnull(', @batch_id = '+convert(varchar(10), @batch_id),'') 
-		exec dbo.log @transfer_id, 'error', '? batch_id ?, transfer ?(transfer_id) : ? ? ? ', @proc_name , @msg
+		exec dbo.log @batch_id, 'error', '? batch_id ?, transfer ?(transfer_id) : ? ? ? ', @proc_name , @msg
 	end 
 
 	if isnull(@transfer_id,0) > 0 and ( @status in ( 'running', 'continue')  or @batch_id =-1 ) 
 		set @is_running = 1
 
---	exec dbo.log @transfer_id, 'footer', '?(?) ?', @proc_name , @transfer_id, @msg
+--	exec dbo.log @batch_id, 'footer', '?(?) ?', @proc_name , @transfer_id, @msg
 	if @result_set=1 
 		select @transfer_id transfer_id, @is_running is_running 
 end

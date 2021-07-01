@@ -19,10 +19,11 @@ CREATE procedure [dbo].[update_transfer]
 	, @last_error_id as int = null
 	, @src_obj_id as int = null 
 	, @trg_obj_id as int = null 
+	, @batch_id as int = -1
 as 
 begin 
 	declare   @proc_name as varchar(255) =  object_name(@@PROCID);
-	exec dbo.log @transfer_id, 'header', '?[?] @start_dt ? , @end_dt ?, @rec_cnt_src ? , @rec_cnt_new ?, @status_id ?', @proc_name , @transfer_id, @start_dt, @end_dt, @rec_cnt_src, @rec_cnt_new, @status_id 
+	exec dbo.log @batch_id, 'header', '?[?] @start_dt ? , @end_dt ?, @rec_cnt_src ? , @rec_cnt_new ?, @status_id ?', @proc_name , @transfer_id, @start_dt, @end_dt, @rec_cnt_src, @rec_cnt_new, @status_id 
 	update dbo.Transfer set 
 		transfer_start_dt = isnull(@start_dt , transfer_start_dt ) 
 		, transfer_end_dt = isnull(@end_dt , transfer_end_dt ) 
@@ -38,9 +39,9 @@ begin
 	where transfer_id = @transfer_id  
 	declare @msg as varchar(255) 
 	if @rec_cnt_new is not null 
-		exec dbo.log @transfer_id, 'INFO', 'rec_cnt_new : ?',  @rec_cnt_new
+		exec dbo.log @batch_id, 'INFO', 'rec_cnt_new : ?',  @rec_cnt_new
 	if @rec_cnt_src  is not null 
-		exec dbo.log @transfer_id, 'INFO', 'rec_cnt_src  : ?',  @rec_cnt_src 
+		exec dbo.log @batch_id, 'INFO', 'rec_cnt_src  : ?',  @rec_cnt_src 
 		
 	footer: 
 end

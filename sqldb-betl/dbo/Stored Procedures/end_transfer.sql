@@ -24,7 +24,14 @@ begin
 		, @status_id as int 
 		,@proc_name as varchar(255) =  object_name(@@PROCID)
 
-	exec dbo.log @transfer_id, 'step', '?(t?) status ?', @proc_name , @transfer_id ,  @status
+	declare @batch_id as int 
+	select @batch_id = b.batch_id 
+	from dbo.batch b
+	inner join dbo.Transfer t on t.batch_id = b.batch_id
+	where b.batch_name= t.transfer_name
+	and t.transfer_id = @transfer_id
+
+	exec dbo.log @batch_id, 'step', '?(t?) status ?', @proc_name , @transfer_id ,  @status
 	
 	select @status_id =status_id 
 	from static.Status 
@@ -41,14 +48,8 @@ begin
 	-- if batch has same name as transfer-> end batch. 
 	-- this is because batch was automatically created 
 	-- by start_transfer
-	declare @batch_id as int 
-	select @batch_id = b.batch_id 
-	from dbo.batch b
-	inner join dbo.Transfer t on t.batch_id = b.batch_id
-	where b.batch_name= t.transfer_name
-	and t.transfer_id = @transfer_id
 
 	if @batch_id is not null 
-		exec dbo.end_batch @batch_id, @status, @transfer_id
+		exec dbo.end_batch @batch_id, @status
 	footer: 
 end

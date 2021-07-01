@@ -16,26 +16,26 @@ as
 begin 
 	-- standard BETL header code... 
 	set nocount on 
-	declare @transfer_id as int = 0 -- for internal betl procedures
+	declare @batch_id as int = 0 -- for internal betl procedures
 	declare @proc_name as varchar(255) =  object_name(@@PROCID);
-	exec dbo.log @transfer_id, 'header', '? ? ? ?', @proc_name , @full_obj_name, @column_name, @column_type_id
+	exec dbo.log @batch_id, 'header', '? ? ? ?', @proc_name , @full_obj_name, @column_name, @column_type_id
 	-- END standard BETL header code... 
 
 	declare @obj_id as int
-	exec dbo.get_obj_id @full_obj_name, @obj_id output, @scope , @obj_tree_depth=default, @transfer_id=@transfer_id
+	exec dbo.get_obj_id @full_obj_name, @obj_id output, @scope , @obj_tree_depth=default, @batch_id=@batch_id
 	if @obj_id is null or @obj_id < 0 
 	begin
-		exec dbo.log @transfer_id, 'step', 'Object ? not found in scope ? .', @full_obj_name, @scope 
+		exec dbo.log @batch_id, 'step', 'Object ? not found in scope ? .', @full_obj_name, @scope 
 		goto footer
 	end
-	exec dbo.log @transfer_id, 'step', 'obj_id resolved: ?(?), scope ? ',@full_obj_name, @obj_id , @scope
+	exec dbo.log @batch_id, 'step', 'obj_id resolved: ?(?), scope ? ',@full_obj_name, @obj_id , @scope
 	-- first check column_type_id 
 	declare @c_type as int 
 	select @c_type  = column_type_id 
 	from static.Column_type 
 	where column_type_id = @column_type_id
 	if @c_type is null 
-		exec dbo.log @transfer_id, 'error', 'invalid column type ?' , @column_type_id 
+		exec dbo.log @batch_id, 'error', 'invalid column type ?' , @column_type_id 
 	else 
 	begin 
 		declare @column_id as int 
@@ -45,10 +45,10 @@ begin
 		where column_name = @column_name and obj_id = @obj_id 
 		
 		if @column_id is null 
-			exec dbo.log @transfer_id, 'error', 'column ? does not exist for object ?(?) ' , @column_name, @full_obj_name, @obj_id
+			exec dbo.log @batch_id, 'error', 'column ? does not exist for object ?(?) ' , @column_name, @full_obj_name, @obj_id
 		else 
 		begin 
-			exec dbo.log @transfer_id, 'var', 'column_id resolved: ?(?)',@column_name, @column_id
+			exec dbo.log @batch_id, 'var', 'column_id resolved: ?(?)',@column_name, @column_id
 			update dbo.col_hist  set column_type_id = @column_type_id
 			where column_id = @column_id 
 			
@@ -56,6 +56,6 @@ begin
 		end
 		end 
 	footer:
-		exec dbo.log @transfer_id, 'footer', 'DONE ? ? ? ?', @proc_name , @full_obj_name, @column_name, @column_type_id
+		exec dbo.log @batch_id, 'footer', 'DONE ? ? ? ?', @proc_name , @full_obj_name, @column_name, @column_type_id
 	-- END standard BETL footer code... 
 end

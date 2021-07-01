@@ -1,13 +1,21 @@
 ﻿
+	  
+/*------------------------------------------------------------------------------------------------
+-- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
+--------------------------------------------------------------------------------------------------
+-- 2021-07-01 Dead batches are batches that are started but never finished or failed and exceed the maximum lifetime.
+*/
+
+
 CREATE procedure [dbo].[detect_dead_batches]
-	@batch_id int 
+	@batch_id int -- the current batch that calls this proc. 
 
 as 
 begin
 	declare 
 		@proc_name as sysname =  object_name(@@PROCID)
-		,@batch_dead_time_min as int -- after this period of inactivity the batch will be seen as stopped.. 
-		,@min_batch_start_dt as datetime -- performance filter to filter batches that started more than @batch_dead_time_min ago.
+		,@batch_max_lifetime as int -- after this period of inactivity the batch will be seen as stopped.. 
+		,@min_batch_start_dt as datetime -- performance filter to filter batches that started more than @batch_max_lifetime ago.
 		,@i as int =0
 
 	-- standard BETL header code... 
@@ -16,8 +24,8 @@ begin
 	-- END standard BETL header code... 
 
 	-- first detect dead batches (running too long idle) 
-	exec dbo.getp @prop='batch_dead_time_min', @value=@batch_dead_time_min output, @batch_id = @batch_id 
-	set @min_batch_start_dt = dateadd(minute, -@batch_dead_time_min, getdate()) 
+	exec dbo.getp @prop='batch_max_lifetime', @value=@batch_max_lifetime output, @batch_id = @batch_id 
+	set @min_batch_start_dt = dateadd(minute, -@batch_max_lifetime, getdate()) 
 	exec dbo.log_batch @batch_id, 'VAR', '@min_batch_start_dt ?', @min_batch_start_dt
 
 	update b
@@ -26,20 +34,16 @@ begin
 	left join 
 	( select b.batch_id, max(tl.log_dt) log_dt 
 	  from dbo.Logging tl 
-	  inner join dbo.Transfer t on tl.transfer_id = t.transfer_id 
-	  inner join dbo.Batch b on t.batch_id = b.batch_id
+	  inner join dbo.Batch b on tl.batch_id = b.batch_id
 		where b.status_id = 400 -- running
 		and b.batch_start_dt < @min_batch_start_dt 
-		
+		and tl.log_dt > @min_batch_start_dt -- performance filter
 	  group by b.batch_id ) 
-	latest_log_dt on latest_log_dt.batch_id = b.batch_id and latest_log_dt.log_dt > @min_batch_start_dt -- performance filter
+	latest_log_dt on latest_log_dt.batch_id = b.batch_id 
 	--inner join static.Status s on b.status_id = s.status_id 
 	where b.status_id = 400 -- running
-	and ( b.batch_start_dt < @min_batch_start_dt -- performance filter
-			or b.guid is null) -- for null guids we always kill the batch because these batches are started from ssms for debugging purpose
---	and b.batch_name = @batch_name 
-	and ( latest_log_dt.batch_id is null -- there is no activity logged after @min_batch_start_dt
-			or b.guid is null) -- for null guids we always kill the batch because these batches are started from ssms for debugging purpose
+	and b.batch_start_dt < @min_batch_start_dt -- performance filter
+	and latest_log_dt.batch_id is null -- there is no activity logged after @min_batch_start_dt
 
 	set @i= @@ROWCOUNT
 	if @i>0 

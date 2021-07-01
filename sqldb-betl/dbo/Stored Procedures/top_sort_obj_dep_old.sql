@@ -21,17 +21,17 @@ select * from dbo.obj_dep_ext where dep_type_id = 4
 */
 
 CREATE procedure [dbo].[top_sort_obj_dep_old]
-	@transfer_id as int = -1
+	@batch_id as int = -1
 as
 begin 
 	declare 
---		@transfer_id as int = null,
+--		@batch_id as int = null,
 		 @debug as bit = 0
 
 	-- standard BETL header code... 
 	set nocount on 
 	declare @proc_name as varchar(255) =  object_name(@@PROCID);
-	exec dbo.log @transfer_id, 'Header', '?', @proc_name
+	exec dbo.log @batch_id, 'Header', '?', @proc_name
 	-- END standard BETL header code... 
 
 	declare @dep table 
@@ -128,7 +128,7 @@ begin
 		where dep_type_id = 4
 		order by top_sort_rank 
 	end 
-	exec dbo.log @transfer_id, 'footer', 'DONE ? ', @proc_name 
+	exec dbo.log @batch_id, 'footer', 'DONE ? ', @proc_name 
 	-- END standard BETL footer code... 
 
 end

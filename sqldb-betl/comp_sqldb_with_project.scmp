@@ -874,7 +874,7 @@
       </PropertyElementName>
       <PropertyElementName>
         <Name>ExcludeUsers</Name>
-        <Value>False</Value>
+        <Value>True</Value>
       </PropertyElementName>
       <PropertyElementName>
         <Name>ExcludeViews</Name>
@@ -976,6 +976,14 @@
         <Name>Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlAssemblyFile</Name>
         <Value>ExcludedType</Value>
       </PropertyElementName>
+      <PropertyElementName>
+        <Name>Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlRoleMembership</Name>
+        <Value>ExcludedType</Value>
+      </PropertyElementName>
+      <PropertyElementName>
+        <Name>Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlUser</Name>
+        <Value>ExcludedType</Value>
+      </PropertyElementName>
     </ConfigurationOptionsElement>
   </SchemaCompareSettingsService>
   <SchemaCompareViewSettings>
@@ -995,6 +1003,15 @@
     <SelectedItem Type="Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlSequence, Microsoft.Data.Tools.Schema.Sql, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Name>dbo</Name>
       <Name>seq_Obj</Name>
+    </SelectedItem>
+    <SelectedItem Type="Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlRoleMembership, Microsoft.Data.Tools.Schema.Sql, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Name></Name>
+      <ParentItem Type="Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlRole, Microsoft.Data.Tools.Schema.Sql, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+        <Name>db_owner</Name>
+      </ParentItem>
+    </SelectedItem>
+    <SelectedItem Type="Microsoft.Data.Tools.Schema.Sql.SchemaModel.SqlUser, Microsoft.Data.Tools.Schema.Sql, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Name>adf-betl</Name>
     </SelectedItem>
   </ExcludedSourceElements>
   <ExcludedTargetElements>

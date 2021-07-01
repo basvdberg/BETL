@@ -10,9 +10,7 @@ declare @obj_tree_param ObjTreeTableParam
 insert into @obj_tree_param 
 SELECT  *
 FROM dbo.obj_tree_ms_sql_server
-
 select * from @obj_tree_param 
-
 exec [dbo].[ingest_obj_tree] @obj_tree_param
 
 exec clear_meta_data
@@ -36,7 +34,7 @@ begin
 	
 	set nocount on 
 	declare @debug as bit = 0 -- set to 1 to print debug info
-	--, @transfer_id as int = -1 
+	--, @batch_id as int = -1 
 	declare @obj_tree ObjTreeTable -- mutable version of @obj_tree ( to keep a record of created obj_id's )
 		, @rec_cnt_src as int=0
 		, @rec_cnt_new as int=0 
@@ -46,14 +44,16 @@ begin
 		, @deleted as int=0
 		, @inserted as int =0 
 		, @status as varchar(255) = 'success'
-		, @transfer_id as int 
 		, @proc_name as sysname =  object_name(@@PROCID)
 		, @now as datetime = getdate() -- all records the same timestamp so that you can join them easier. 
 		, @create_dt as datetime 
 		, @delete_dt as datetime 
+		, @transfer_id as int=-1
 
 	set @delete_dt =@now
 	set @create_dt =@now
+	
+	exec dbo.start_batch @batch_id=@batch_id output, @batch_name = @proc_name
 
 	-- standard BETL header code... 
 	set nocount on 
@@ -61,14 +61,11 @@ begin
 	-- END standard BETL header code... 
 
 	select @rec_cnt_src = count(*) from @obj_tree_param
-	exec log @transfer_id, 'var', '@rec_cnt_src = ?', @rec_cnt_src
+	exec log @batch_id, 'var', '@rec_cnt_src = ?', @rec_cnt_src
 
 	DECLARE @C TABLE (act tinyint) -- act 1= insert , 2 = update, 3= delete , 4= undelete
 
-	--declare @obj_tree_param ObjTreeTableParam 
-	--insert into @obj_tree_param select * from dbo.test2
-	--declare @obj_tree_param ObjTreeTableParam 
-	exec dbo.start_transfer @batch_id = @batch_id, @transfer_id=@transfer_id output, @transfer_name= 'ingest_obj_tree', @result_set = 0 
+	exec dbo.start_transfer @batch_id = @batch_id output, @transfer_id=@transfer_id output, @transfer_name= @proc_name, @result_set = 0 
 	--begin try 
 	--begin transaction 
 		-- begin servers 
@@ -81,8 +78,8 @@ begin
 		USING #servers src
 		ON (trg.obj_name = src.server_name and trg.obj_type_id = 50) 
 		WHEN NOT MATCHED THEN  -- not exists
-			insert (obj_type_id, obj_name, server_type_id, _transfer_id, _create_dt) 
-			values (50, server_name, server_type_id , @transfer_id, @create_dt)
+			insert (obj_type_id, obj_name, server_type_id, _batch_id, _create_dt) 
+			values (50, server_name, server_type_id , @batch_id, @create_dt)
 		OUTPUT 1 INTO @C;
 
 		insert into @obj_tree 
@@ -136,14 +133,14 @@ begin
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted
 				 UPDATE set 
 	 				_delete_dt = null -- undelete
-					, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
+					, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  -- undelete
 		-- inserts
 		WHEN NOT MATCHED THEN  -- not exists
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt) 
-			VALUES (40, src.db_name, parent_id, server_type_id, @transfer_id, @create_dt) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, _create_dt) 
+			VALUES (40, src.db_name, parent_id, server_type_id, @batch_id, @create_dt) 
 -- no delete detection because this proc usually is run based on an object tree of 1 specific database. 
 --		WHEN NOT MATCHED BY SOURCE and trg._delete_dt is null AND trg.obj_type_id = 40 and trg.parent_id in ( select distinct parent_id from #dbs)  THEN  -- exists but not in source --> mark as deleted
---			UPDATE set _delete_dt = @now , _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+--			UPDATE set _delete_dt = @now , _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -178,15 +175,15 @@ begin
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted  
 			UPDATE set 
 	 			_delete_dt = null -- undelete
-				,_record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  
+				,_record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  
 		WHEN NOT MATCHED THEN  -- not exists->insert
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, _create_dt)  
-			VALUES (30, src.[schema_name], parent_id, server_type_id, @transfer_id, @create_dt)  
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, _create_dt)  
+			VALUES (30, src.[schema_name], parent_id, server_type_id, @batch_id, @create_dt)  
 		WHEN NOT MATCHED BY SOURCE and trg._delete_dt is null AND trg.obj_type_id = 30 and trg.parent_id IN ( select distinct parent_id from #schemas) 
 			and @detect_schema_delete=1 THEN  -- exists but not in source --> mark as deleted
 			UPDATE set 
 				_delete_dt = @now --delete
-				,_record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+				,_record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -219,7 +216,7 @@ begin
 		THEN -- exists, but marked as deleted  or something changed
 			UPDATE set
 	 			_delete_dt = null -- undelete
-				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
+				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  -- undelete
 				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
 				, trg.external_obj_id = src.external_obj_id
 
@@ -231,10 +228,10 @@ begin
 		THEN  -- exists but not in source --> mark as deleted 
 			UPDATE set
 				_delete_dt = isnull(@now,_delete_dt)  -- delete
-				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -267,7 +264,7 @@ begin
 		THEN -- exists, but marked as deleted  or something changed
 			UPDATE set
 	 			_delete_dt = null -- undelete
-				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id  -- undelete
+				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  -- undelete
 				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
 				, trg.external_obj_id = src.external_obj_id
 
@@ -280,10 +277,10 @@ begin
 		THEN  -- exists but not in source --> mark as deleted 
 			UPDATE set
 				_delete_dt = isnull(@now,_delete_dt)  -- delete
-				, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _transfer_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
-			VALUES (src.obj_type_id, src.[obj_name], [db_id] , server_type_id, @transfer_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
+			VALUES (src.obj_type_id, src.[obj_name], [db_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -310,9 +307,9 @@ begin
 		fetch next from db_cursor into @obj_id , @source
 		while @@FETCH_STATUS=0
 		begin
-			exec dbo.setp_obj_id @prop_id, @source, @obj_id, @transfer_id 
+			exec dbo.setp_obj_id @prop_id, @source, @obj_id, @batch_id 
 			if @debug =1 
-				exec log @transfer_id, 'debug', 'set property source[?] for obj_id[?] to ?', @prop_id, @obj_id, @source
+				exec log @batch_id, 'debug', 'set property source[?] for obj_id[?] to ?', @prop_id, @obj_id, @source
 			fetch next from db_cursor into @obj_id , @source
 		end 
 		close db_cursor 
@@ -322,7 +319,7 @@ begin
 		-- begin delete propagation if a database or schema is marked as deleted-> also mark descendants as deleted. 
 		begin 
 			UPDATE child
-			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
 			inner join dbo.obj parent on child.parent_id = parent.obj_id 
 			where parent._delete_dt is not null 
@@ -331,7 +328,7 @@ begin
 
 			-- if prev statement set schemas to deleted -> check again for tables and views in these schemas
 			UPDATE child
-			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
 			inner join dbo.obj parent on child.parent_id = parent.obj_id 
 			where parent._delete_dt is not null 
@@ -339,7 +336,7 @@ begin
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 
 			-- update orphan columns
-			update col set _delete_dt = o._delete_dt, _record_dt = @now, _record_user = suser_sname(), _transfer_id = @transfer_id
+			update col set _delete_dt = o._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.col col
 			inner join dbo.obj o on col.obj_id = o.obj_id 
 			where 
@@ -444,7 +441,7 @@ begin
 
 		-- new records
 		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
-		, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value) 
+		, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value) 
 		select obj_id,column_name, _eff_dt, ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale,
 		_chksum, -1
 		, isnull(column_type_id, derived_column_type_id) -- for new columns we take the derived column type if nothing is entered in obj_tree
@@ -453,7 +450,7 @@ begin
 		where mutation = 'NEW'
  
 		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len, numeric_precision,numeric_scale 
-		, _delete_dt, column_id, _chksum, _transfer_id, column_type_id, primary_key_sorting, default_value  )
+		, _delete_dt, column_id, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value  )
 		select obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
 		, null _delete_dt
 		, column_id
@@ -513,11 +510,15 @@ begin
 			,@rec_cnt_undeleted += isnull(sum ( case when 	act=4 then 1 else 0 end),0)   -- 4=undelete
 	from @c
 
-	exec dbo.log @transfer_id, 'info', 'ingest_obj_tree new ?, changed ?, deleted ?, undeleted ? ',  @rec_cnt_new , @rec_cnt_changed , @rec_cnt_deleted, @rec_cnt_undeleted
+	exec dbo.log @batch_id, 'info', 'ingest_obj_tree new ?, changed ?, deleted ?, undeleted ? ',  @rec_cnt_new , @rec_cnt_changed , @rec_cnt_deleted, @rec_cnt_undeleted
 
 	if @debug=1 
 		select @rec_cnt_src rec_cnt_src, @rec_cnt_new rec_cnt_new, @rec_cnt_changed rec_cnt_changed, @rec_cnt_deleted rec_cnt_deleted
 
 	exec dbo.end_transfer @transfer_id, @status, @rec_cnt_src, @rec_cnt_new, @rec_cnt_changed, @rec_cnt_deleted, @rec_cnt_undeleted
+
+	-- standard BETL header code... 
 	exec dbo.log_batch @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
+	-- standard BETL footer code... 
+
 end

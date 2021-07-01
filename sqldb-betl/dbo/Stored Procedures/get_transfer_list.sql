@@ -23,7 +23,7 @@ begin
 		, source_alias.inherited_value source
 		, '
 select q.*
-, {{transfer_id}} _transfer_id 
+, {{batch_id}} _batch_id 
 from '+isnull(obj.db_name,'') + '.'+ isnull(obj.obj_name,'')  +' as q
 		' select_sql ,
 		case when @sotap in ( 's', 'o') then 

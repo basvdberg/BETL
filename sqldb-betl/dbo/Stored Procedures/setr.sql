@@ -13,7 +13,7 @@ CREATE PROCEDURE [dbo].[setr]
 	@rule_id int
 	, @obj_name sysname
 	, @column_name sysname = null 
-	, @transfer_id as int = -1 -- use this for logging. 
+	, @batch_id as int = -1 -- use this for logging. 
 	, @schema_name sysname = 'idw_imp' 
 
 as 
@@ -29,7 +29,7 @@ begin
 	set nocount on 
 	declare @proc_name as varchar(255) =  object_name(@@PROCID);
 	if @debug=1 
-		exec dbo.log @transfer_id =@transfer_id, @log_type ='header', @msg ='? ? ? ? ?', @i1 =@proc_name , @i2 =@rule_id, @i3 =@obj_id, @i4=@column_name, @i5=@schema_name, @simple_mode = 1
+		exec dbo.log @batch_id =@batch_id, @log_type ='header', @msg ='? ? ? ? ?', @i1 =@proc_name , @i2 =@rule_id, @i3 =@obj_id, @i4=@column_name, @i5=@schema_name, @simple_mode = 1
 	-- END standard BETL header code... 
 
   select @lookup_rule_id = rule_id
@@ -39,7 +39,7 @@ begin
   if @lookup_rule_id is null 
   begin 
 	print 'Rule not found in static.Rule '
-	exec dbo.log @transfer_id =@transfer_id, @log_type ='error', @msg ='Rule ? not found in static.Rule ', @i1 =@rule_id, @simple_mode = 1
+	exec dbo.log @batch_id =@batch_id, @log_type ='error', @msg ='Rule ? not found in static.Rule ', @i1 =@rule_id, @simple_mode = 1
 	goto footer
   end
 
@@ -51,7 +51,7 @@ begin
   if @obj_id is null 
   begin 
 	print 'Object not found'
-	exec dbo.log @transfer_id =@transfer_id, @log_type ='error', @msg ='Object ?.? not found in dbo.col_ext ', @i1=@schema_name, @i2 =@obj_name , @simple_mode = 1
+	exec dbo.log @batch_id =@batch_id, @log_type ='error', @msg ='Object ?.? not found in dbo.col_ext ', @i1=@schema_name, @i2 =@obj_name , @simple_mode = 1
 	goto footer
   end
 
@@ -66,7 +66,7 @@ begin
   if @col_id is null 
   begin 
 	print 'Column not found'
-	exec dbo.log @transfer_id =@transfer_id, @log_type ='error', @msg ='Column ?.?.? not found in dbo.col_ext ', @i1=@schema_name, @i2 =@obj_name ,@i3=@column_name, @simple_mode = 1
+	exec dbo.log @batch_id =@batch_id, @log_type ='error', @msg ='Column ?.?.? not found in dbo.col_ext ', @i1=@schema_name, @i2 =@obj_name ,@i3=@column_name, @simple_mode = 1
 	goto footer
   end
 
@@ -77,6 +77,6 @@ begin
 --	select * from [dbo].[Property_ext]	where obj_id = @obj_id and property like @prop
     footer:
 		if @debug=1 
-		exec dbo.log @transfer_id =@transfer_id, @log_type ='footer', @msg ='done ? ? ? ? ?', @i1 =@proc_name , @i2 =@rule_id, @i3 =@obj_id, @i4=@column_name, @i5=@schema_name, @simple_mode = 1
+		exec dbo.log @batch_id =@batch_id, @log_type ='footer', @msg ='done ? ? ? ? ?', @i1 =@proc_name , @i2 =@rule_id, @i3 =@obj_id, @i4=@column_name, @i5=@schema_name, @simple_mode = 1
 	-- END standard BETL footer code... 
 end

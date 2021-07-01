@@ -13,9 +13,12 @@
     [error_interactive_mode] VARCHAR (255)  NULL,
     [error_machine_name]     NVARCHAR (255) NULL,
     [error_user_name]        NVARCHAR (128) NULL,
+    [batch_id]               INT            NULL,
     [transfer_id]            INT            NULL,
     [record_dt]              DATETIME       CONSTRAINT [DF__Error__record_dt__24885067] DEFAULT (getdate()) NULL,
     [record_user]            NVARCHAR (128) NULL,
     CONSTRAINT [PK_error_id] PRIMARY KEY CLUSTERED ([error_id] DESC)
 );
+
+
 
