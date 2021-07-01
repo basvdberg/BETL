@@ -16,7 +16,7 @@ begin
   declare @property_scope as varchar(255) 
 		, @obj_id int
 		, @prop_id as int 
-		, @debug as bit = 0
+		, @debug as bit = 1
 	-- standard BETL header code... 
 	set nocount on 
 	declare @proc_name as varchar(255) =  object_name(@@PROCID);

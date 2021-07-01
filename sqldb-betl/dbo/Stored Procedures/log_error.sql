@@ -7,13 +7,13 @@ exec dbo.log_error -1, 'Something went wrong', 11 , 0, 0, 'aap'
 -----------------------------------------------------------------------------------------------
 */
 CREATE PROCEDURE [dbo].[log_error](
-	    --@batch_id as int
 		@batch_id as int = -1
 		, @msg as varchar(255) 
 		, @severity as int 
 		, @number as int = null 
 		, @line as int = null 
 		, @procedure as varchar(255) = null
+		, @transfer_id as int=-1
 		)
 AS
 BEGIN
@@ -27,22 +27,26 @@ BEGIN
 	values( getdate(), @msg, @batch_id, 50) 
 
 --	exec dbo.log @batch_id, 'header', '?(?) severity ? ?', @sp_name ,@batch_id, @severity, @msg
-    INSERT INTO [dbo].[Error]([error_code],[error_msg],[error_line],[error_procedure],[error_severity],[batch_id]) 
+    INSERT INTO [dbo].[Error]([error_code],[error_msg],[error_line],[error_procedure],[error_severity],[batch_id], transfer_id) 
     VALUES (
-    [util].Int2Char(@number)
+    @number
     , isnull(@msg,'')
-    , [util].Int2Char(@line) 
-    ,  isnull(@procedure,'')
-    , [util].Int2Char(@severity)
-    , [util].Int2Char(@batch_id))
-	declare @last_error_id as int = SCOPE_IDENTITY()
-    update dbo.[Transfer] set transfer_end_dt = getdate(), status_id = 200
-    , last_error_id = @last_error_id
-    where batch_id = @batch_id
-    update dbo.[Batch] set batch_end_dt = getdate(), status_id = 200
-    , last_error_id = @last_error_id
-    where batch_id = @batch_id
+    , @line
+    , isnull(@procedure,'')
+    , @severity
+    , @batch_id
+	, @transfer_id
+	)
 
+
+	declare @last_error_id as int = SCOPE_IDENTITY()
+
+    if isnull(@transfer_id,-1) > 0 
+		update dbo.[Transfer] set transfer_end_dt = getdate(), status_id = 200, last_error_id = @last_error_id
+		where transfer_id = @transfer_id
+
+    update dbo.[Batch] set batch_end_dt = getdate(), status_id = 200 , last_error_id = @last_error_id
+    where batch_id = @batch_id
 
 	RAISERROR ( @msg, 18,  179 ) 
 --	exec dbo.log @batch_id, 'ERROR' , @msg

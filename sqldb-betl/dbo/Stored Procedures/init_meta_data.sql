@@ -10,7 +10,7 @@ begin
 
 	MERGE INTO [dbo].[error] AS [Target]
 	USING (VALUES
-	  (-1,-1,N'unknown',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2020-02-20T13:15:15.617',NULL)
+	  (-1,-1,N'unknown',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,getdate(),NULL)
 	) AS [Source] ([error_id],[error_code],[error_msg],[error_line],[error_procedure],[error_procedure_id],[error_execution_id],[error_event_name],[error_severity],[error_state],[error_source],[error_interactive_mode],[error_machine_name],[error_user_name],[batch_id],[record_dt],[record_user])
 	ON ([Target].[error_id] = [Source].[error_id])
 	WHEN MATCHED AND (
@@ -61,7 +61,7 @@ begin
 	SET IDENTITY_INSERT [dbo].[Batch] ON
 	MERGE INTO [dbo].[Batch] AS [Target]
 	USING (VALUES
-	  (-1,N'unknown','2020-02-20T13:15:22.257',NULL,-1,-1,-1,N'unknown',N'unknown',N'unknown',NULL,0,NULL,NULL)
+	  (-1,N'unknown',getdate(),NULL,-1,-1,-1,N'unknown',N'unknown',N'unknown',NULL,0,NULL,NULL)
 	) AS [Source] ([batch_id],[batch_name],[batch_start_dt],[batch_end_dt],[status_id],[last_error_id],[prev_batch_id],[exec_server],[exec_host],[exec_user],[guid],[continue_batch],[batch_seq],[parent_batch_id])
 	ON ([Target].[batch_id] = [Source].[batch_id])
 	WHEN MATCHED AND (
@@ -108,9 +108,8 @@ begin
 	-- EXEC sp_generate_merge @schema = 'dbo', @table_name ='Obj'
 	MERGE INTO [dbo].[Obj] AS [Target]
 	USING (VALUES
-	  (-1,N'unknown',10,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
+	  (-1,N'unknown',-1,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
 	 ,(10,N'localhost',50,NULL,NULL,NULL, dbo.server_type(),NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
-	 ,(20, suser_sname()  ,60, 10,NULL, NULL, dbo.server_type(),NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
 	) AS [Source] ([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[external_obj_id],[_create_dt],[_delete_dt],[_batch_id],[_record_dt],[_record_user])
 	ON ([Target].[obj_id] = [Source].[obj_id])
 	WHEN MATCHED AND (
@@ -157,7 +156,7 @@ begin
 
 	MERGE INTO [dbo].[Transfer] AS [Target]
 	USING (VALUES
-	  (-1,-1,N'unknown',-1,-1,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,-1,NULL,-1,NULL,'2021-07-01T10:51:29.220',N'AzureAD\BasvandenBerg')
+	  (-1,-1,N'unknown',-1,-1,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,-1,NULL,-1,NULL,null,null)
 	) AS [Source] ([transfer_id],[batch_id],[transfer_name],[src_obj_id],[trg_obj_id],[trg_obj_name],[transfer_start_dt],[transfer_end_dt],[status_id],[rec_cnt_src],[rec_cnt_new],[rec_cnt_changed],[rec_cnt_deleted],[rec_cnt_undeleted],[last_error_id],[prev_transfer_id],[transfer_seq],[guid],[_record_dt],[_record_user])
 	ON ([Target].[transfer_id] = [Source].[transfer_id])
 	WHEN MATCHED AND (

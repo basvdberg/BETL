@@ -1,4 +1,6 @@
-﻿	  
+﻿
+--select * from obj_ext_all where obj_name like '%AzureAD\BasvandenBerg%'
+	  
 
 /*------------------------------------------------------------------------------------------------
 -- BETL, meta data driven ETL generation, licensed under GNU GPL https://github.com/basvdberg/BETL 
@@ -10,6 +12,11 @@ select dbo.obj_id'AdventureWorks2014', null) --> points to db
 select dbo.obj_id('BETL', null) --> points to db
 select dbo.obj_id'', null) --> points to db
 select * from dbo.Obj
+
+
+select dbo.obj_id('AzureAD\BasvandenBerg')
+select dbo.obj_id('[betl].AzureAD\BasvandenBerg')
+
 */
 CREATE FUNCTION [dbo].[obj_id]( @full_obj_name sysname ) 
 RETURNS int
@@ -56,7 +63,8 @@ BEGIN
 	(
 		o._delete_dt is null 
 		and o.obj_type_id=60 -- user
-		and o.obj_name = @full_obj_name
+		and o.[obj_name] = @elem1 
+		and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
 	) 
 
 	

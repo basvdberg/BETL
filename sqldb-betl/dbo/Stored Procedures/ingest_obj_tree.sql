@@ -10,9 +10,7 @@ declare @obj_tree_param ObjTreeTableParam
 insert into @obj_tree_param 
 SELECT  *
 FROM dbo.obj_tree_ms_sql_server
-
 select * from @obj_tree_param 
-
 exec [dbo].[ingest_obj_tree] @obj_tree_param
 
 exec clear_meta_data
@@ -50,9 +48,12 @@ begin
 		, @now as datetime = getdate() -- all records the same timestamp so that you can join them easier. 
 		, @create_dt as datetime 
 		, @delete_dt as datetime 
+		, @transfer_id as int=-1
 
 	set @delete_dt =@now
 	set @create_dt =@now
+	
+	exec dbo.start_batch @batch_id=@batch_id output, @batch_name = @proc_name
 
 	-- standard BETL header code... 
 	set nocount on 
@@ -64,10 +65,7 @@ begin
 
 	DECLARE @C TABLE (act tinyint) -- act 1= insert , 2 = update, 3= delete , 4= undelete
 
-	--declare @obj_tree_param ObjTreeTableParam 
-	--insert into @obj_tree_param select * from dbo.test2
-	--declare @obj_tree_param ObjTreeTableParam 
-	exec dbo.start_transfer @batch_id = @batch_id, @batch_id=@batch_id output, @transfer_name= 'ingest_obj_tree', @result_set = 0 
+	exec dbo.start_transfer @batch_id = @batch_id output, @transfer_id=@transfer_id output, @transfer_name= @proc_name, @result_set = 0 
 	--begin try 
 	--begin transaction 
 		-- begin servers 
@@ -517,6 +515,10 @@ begin
 	if @debug=1 
 		select @rec_cnt_src rec_cnt_src, @rec_cnt_new rec_cnt_new, @rec_cnt_changed rec_cnt_changed, @rec_cnt_deleted rec_cnt_deleted
 
-	exec dbo.end_transfer @batch_id, @status, @rec_cnt_src, @rec_cnt_new, @rec_cnt_changed, @rec_cnt_deleted, @rec_cnt_undeleted
+	exec dbo.end_transfer @transfer_id, @status, @rec_cnt_src, @rec_cnt_new, @rec_cnt_changed, @rec_cnt_deleted, @rec_cnt_undeleted
+
+	-- standard BETL header code... 
 	exec dbo.log_batch @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
+	-- standard BETL footer code... 
+
 end
