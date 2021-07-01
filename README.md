@@ -20,6 +20,7 @@ Go directly to [installation](https://github.com/basvdberg/BETL/wiki/1.-Installa
 * Dependent ( e.g. dependent on vendor or tooling other than T-SQL and handle bars. no external libaries.). 
 * Restrictive ( all or nothing. You can choose which functionality you require in your project.)
 * Visual (currently it's only T-SQL. My next focus would be to build a [meta data gui](https://github.com/basvdberg/BetlApp) )
+* Finished. Although I spent many hours on BETL, there are still some loose ends. You are very welcome to help. 
 
 ## Main reasons for using BETL
  * Improve your productivity. However you need to invest some time to get to know BETL. 
