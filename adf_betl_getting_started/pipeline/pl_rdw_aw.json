@@ -133,7 +133,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name, *\nfrom obj_ext o\nwhere \nobj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'staging_aw'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom obj_ext o\nwhere \nobj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'staging_aw'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
