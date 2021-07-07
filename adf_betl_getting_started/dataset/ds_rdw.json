@@ -1,8 +1,8 @@
 {
-	"name": "ds_aw",
+	"name": "ds_rdw",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "ls_sqldb_aw",
+			"referenceName": "ls_sqldb_rdw",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
@@ -28,6 +28,5 @@
 				"type": "Expression"
 			}
 		}
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }

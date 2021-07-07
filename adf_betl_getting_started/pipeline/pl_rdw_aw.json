@@ -99,12 +99,85 @@
 					},
 					"activities": [
 						{
-							"name": "Wait1",
-							"type": "Wait",
+							"name": "generate_create_table_ddl",
+							"type": "Lookup",
 							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"waitTimeInSeconds": 1
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderStoredProcedureName": "[dbo].[parse_handlebars_obj_id]",
+									"storedProcedureParameters": {
+										"batch_id": {
+											"type": "Int32",
+											"value": null
+										},
+										"obj_id": {
+											"type": "Int32",
+											"value": "@item.obj_id"
+										},
+										"output": {
+											"type": "String",
+											"value": null
+										},
+										"output_result": {
+											"type": "Boolean",
+											"value": "true"
+										},
+										"template_name": {
+											"type": "String",
+											"value": "rdw_create_table"
+										}
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_betl",
+									"type": "DatasetReference"
+								}
+							}
+						},
+						{
+							"name": "exec_create_table_ddl",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "generate_create_table_ddl",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_rdw",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "dbo",
+										"table_name": "Dummy"
+									}
+								}
 							}
 						}
 					]
