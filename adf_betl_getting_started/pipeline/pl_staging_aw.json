@@ -111,11 +111,32 @@
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
-								"enableStaging": false
+								"sink": {
+									"type": "AzureSqlSink"
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
 									"referenceName": "ds_aw",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "@item.schema_name",
+										"table_name": "@item.table_name"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_staging",
 									"type": "DatasetReference"
 								}
 							]
@@ -146,7 +167,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select * from prop_ext \nwhere property = 'include_staging' and inherited_value = 1 \nand obj_type = 'table'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
