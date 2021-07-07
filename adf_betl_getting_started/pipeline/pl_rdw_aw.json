@@ -6,7 +6,14 @@
 				"name": "ingest_obj_tree_rdw",
 				"description": "make sure that the meta data is up to date",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "create_rdw_schema_if_not_exists",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -121,7 +128,7 @@
 										},
 										"obj_id": {
 											"type": "Int32",
-											"value": "@item.obj_id"
+											"value": "@item().obj_id"
 										},
 										"output": {
 											"type": "String",
@@ -167,6 +174,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@activity('generate_create_table_ddl').output._output",
+										"type": "Expression"
+									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -215,6 +226,35 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "create_rdw_schema_if_not_exists",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'rdw' )\n    EXEC('CREATE SCHEMA [rdw]')\n\nselect 'done' result\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_rdw",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "Dummy"
+						}
+					}
 				}
 			}
 		],
