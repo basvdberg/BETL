@@ -96,103 +96,7 @@
 					"items": {
 						"value": "@activity('Lookup_staging_tables').output.value",
 						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Copy staging table",
-							"type": "Copy",
-							"dependsOn": [
-								{
-									"activity": "drop_table_if_exists",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "AzureSqlSink",
-									"tableOption": "autoCreate",
-									"disableMetricsCollection": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ds_aw",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": "@item().schema_name",
-										"table_name": "@item().table_name"
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "ds_staging",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": "staging",
-										"table_name": {
-											"value": "@concat( item().schema_name, '_' , item().table_name)",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						},
-						{
-							"name": "drop_table_if_exists",
-							"description": "staging is always dropped and full inserted",
-							"type": "Lookup",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderQuery": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''[staging].'\n, item().schema_name, '_' , item().table_name\n, ''') AND type in (N''U'')) DROP TABLE [staging].['\n, item().schema_name, '_' , item().table_name\n, '] select 1 result '\n)}\n",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "ds_staging",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": "dbo",
-										"table_name": "dummy"
-									}
-								}
-							}
-						}
-					]
+					}
 				}
 			},
 			{
@@ -218,7 +122,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name, *\nfrom obj_ext o\nwhere \nobj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'staging_aw'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
