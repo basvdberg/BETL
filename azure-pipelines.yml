@@ -1,0 +1,22 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+- develop
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+
+# Publish the artifact to be used as a source for a release pipeline.
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.SourcesDirectory)/ArmTemplate' 
+    artifact: 'ArmTemplates'
+    publishLocation: 'pipeline'
+   
