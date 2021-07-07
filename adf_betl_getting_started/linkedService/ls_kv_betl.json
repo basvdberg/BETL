@@ -1,0 +1,11 @@
+{
+	"name": "ls_kv_betl",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://kv-betl-dev.vault.azure.net/"
+		}
+	}
+}
