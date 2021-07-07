@@ -74,6 +74,102 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "ForEachStagingTable",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_staging_tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_staging_tables').output.items",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Wait1",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Lookup_staging_tables",
+				"description": "select tables to be transfered into staging layer of the dwh using property include_staging",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "set include_staging property",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select * from prop_ext \nwhere property = 'include_staging' and inherited_value = 1 \nand obj_type = 'table'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "set include_staging property",
+				"description": "for demo purposes we set this in the PL",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ingest_obj_tree",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
 		"annotations": [],
