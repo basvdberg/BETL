@@ -154,7 +154,7 @@
 									"parameters": {
 										"schema_name": "staging",
 										"table_name": {
-											"value": "@variables('target_table_name')",
+											"value": "@concat( item().schema_name, '_' , item().table_name)",
 											"type": "Expression"
 										}
 									}
@@ -162,27 +162,10 @@
 							]
 						},
 						{
-							"name": "Set target tablename",
-							"type": "SetVariable",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"variableName": "target_table_name",
-								"value": "@concat(item().schema_name, '_' , item().table_name)"
-							}
-						},
-						{
 							"name": "drop_table_if_exists",
 							"description": "staging is always dropped and full inserted",
 							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "Set target tablename",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"policy": {
 								"timeout": "7.00:00:00",
 								"retry": 0,
@@ -194,7 +177,7 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''[staging].'\n, variables('target_table_name')\n, ''') AND type in (N''U'')) DROP TABLE [staging].['\n, variables('target_table_name')\n, ']'\n)}",
+									"sqlReaderQuery": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''[staging].'\n, item().schema_name, '_' , item().table_name\n, ''') AND type in (N''U'')) DROP TABLE [staging].['\n, item().schema_name, '_' , item().table_name\n, '] select 1 result '\n)}\n",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -279,11 +262,6 @@
 				}
 			}
 		],
-		"variables": {
-			"target_table_name": {
-				"type": "String"
-			}
-		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},
