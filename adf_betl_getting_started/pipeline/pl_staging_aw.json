@@ -94,7 +94,7 @@
 					},
 					"activities": [
 						{
-							"name": "Copy data1",
+							"name": "Copy staging table",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -112,7 +112,9 @@
 									"partitionOption": "None"
 								},
 								"sink": {
-									"type": "AzureSqlSink"
+									"type": "AzureSqlSink",
+									"tableOption": "autoCreate",
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
@@ -137,7 +139,14 @@
 							"outputs": [
 								{
 									"referenceName": "ds_staging",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "staging",
+										"table_name": {
+											"value": "@item.schema_name+'_'+ @item.table_name",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
