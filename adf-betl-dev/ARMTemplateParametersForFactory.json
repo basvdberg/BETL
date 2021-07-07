@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-betl-dev"
+		},
+		"ls_kv_betl_properties_typeProperties_baseUrl": {
+			"value": "https://kv-betl-dev.vault.azure.net/"
+		},
+		"ls_sqldb_aw_properties_typeProperties_connectionString_secretName": {
+			"value": "connectionStringSqldbAw"
+		},
+		"ls_sqldb_betl_properties_typeProperties_connectionString_secretName": {
+			"value": "connectionStringSqldbBetl"
+		},
+		"ls_sqldb_rdw_properties_typeProperties_connectionString_secretName": {
+			"value": "connectionStringSqldbRdw"
+		}
+	}
+}

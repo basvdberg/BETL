@@ -1,0 +1,6 @@
+{
+	"Environment": {
+		"type": "String",
+		"value": "dev"
+	}
+}
