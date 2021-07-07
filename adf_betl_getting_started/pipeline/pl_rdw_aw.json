@@ -1,9 +1,10 @@
 {
-	"name": "pl_staging_aw",
+	"name": "pl_rdw_aw",
 	"properties": {
 		"activities": [
 			{
 				"name": "ingest_obj_tree",
+				"description": "make sure that the meta data is up to date",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -64,7 +65,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "ds_aw",
+						"referenceName": "ds_staging",
 						"type": "DatasetReference",
 						"parameters": {
 							"schema_name": "dbo",
@@ -84,7 +85,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup_staging_tables",
+						"activity": "Lookup_rdw_tables",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -152,10 +153,7 @@
 									"referenceName": "ds_staging",
 									"type": "DatasetReference",
 									"parameters": {
-										"schema_name": {
-											"value": "@variables('target_schema_name')",
-											"type": "Expression"
-										},
+										"schema_name": "staging",
 										"table_name": {
 											"value": "@concat( item().schema_name, '_' , item().table_name)",
 											"type": "Expression"
@@ -180,10 +178,7 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": {
-										"value": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''['\n,variables('target_schema_name')\n,'].'\n, item().schema_name, '_' , item().table_name\n, ''') AND type in (N''U'')) DROP TABLE ['\n,variables('target_schema_name')\n,'].['\n, item().schema_name, '_' , item().table_name\n, '] select 1 result '\n)}\n",
-										"type": "Expression"
-									},
+									"sqlReaderQuery": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''[staging].'\n, item().schema_name, '_' , item().table_name\n, ''') AND type in (N''U'')) DROP TABLE [staging].['\n, item().schema_name, '_' , item().table_name\n, '] select 1 result '\n)}\n",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -201,12 +196,12 @@
 				}
 			},
 			{
-				"name": "Lookup_staging_tables",
-				"description": "select tables to be transfered into staging layer of the dwh using property include_staging",
+				"name": "Lookup_rdw_tables",
+				"description": "just select all tables in schema staging_aw",
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "set include_staging property",
+						"activity": "ingest_obj_tree",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -233,47 +228,8 @@
 					},
 					"firstRowOnly": false
 				}
-			},
-			{
-				"name": "set include_staging property",
-				"description": "for demo purposes we set this in the PL",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "ingest_obj_tree",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext\nselect 'done' result",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_betl",
-						"type": "DatasetReference"
-					}
-				}
 			}
 		],
-		"variables": {
-			"target_schema_name": {
-				"type": "String",
-				"defaultValue": "staging_aw"
-			}
-		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},
