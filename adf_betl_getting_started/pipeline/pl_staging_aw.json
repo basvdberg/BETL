@@ -89,18 +89,36 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup_staging_tables').output.items",
+						"value": "@activity('Lookup_staging_tables').output.value",
 						"type": "Expression"
 					},
 					"activities": [
 						{
-							"name": "Wait1",
-							"type": "Wait",
+							"name": "Copy data1",
+							"type": "Copy",
 							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
 							"userProperties": [],
 							"typeProperties": {
-								"waitTimeInSeconds": 1
-							}
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_aw",
+									"type": "DatasetReference"
+								}
+							]
 						}
 					]
 				}
@@ -135,7 +153,8 @@
 					"dataset": {
 						"referenceName": "ds_betl",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
@@ -161,7 +180,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext",
+						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext\nselect 'done' result",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
