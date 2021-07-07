@@ -81,7 +81,7 @@
 				]
 			},
 			{
-				"name": "ForEachStagingTable",
+				"name": "ForEachTable",
 				"type": "ForEach",
 				"dependsOn": [
 					{
