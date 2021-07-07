@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ingest_obj_tree",
+				"name": "ingest_obj_tree_rdw",
 				"description": "make sure that the meta data is up to date",
 				"type": "Copy",
 				"dependsOn": [],
@@ -94,9 +94,20 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup_staging_tables').output.value",
+						"value": "@activity('Lookup_rdw_tables').output.value",
 						"type": "Expression"
-					}
+					},
+					"activities": [
+						{
+							"name": "Wait1",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
 				}
 			},
 			{
@@ -105,7 +116,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ingest_obj_tree",
+						"activity": "ingest_obj_tree_rdw",
 						"dependencyConditions": [
 							"Succeeded"
 						]
