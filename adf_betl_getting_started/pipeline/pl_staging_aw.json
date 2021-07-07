@@ -100,7 +100,14 @@
 						{
 							"name": "Copy staging table",
 							"type": "Copy",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Set target tablename",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "7.00:00:00",
 								"retry": 0,
@@ -117,6 +124,10 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''[staging].'\n, variables('target_table_name')\n, ''') AND type in (N''U'')) DROP TABLE [staging].'\n, variables('target_table_name')\n)}",
+										"type": "Expression"
+									},
 									"tableOption": "autoCreate",
 									"disableMetricsCollection": false
 								},
@@ -135,8 +146,8 @@
 									"referenceName": "ds_aw",
 									"type": "DatasetReference",
 									"parameters": {
-										"schema_name": "@item.schema_name",
-										"table_name": "@item.table_name"
+										"schema_name": "@item().schema_name",
+										"table_name": "@item().table_name"
 									}
 								}
 							],
@@ -147,12 +158,22 @@
 									"parameters": {
 										"schema_name": "staging",
 										"table_name": {
-											"value": "@item.schema_name+'_'+ @item.table_name",
+											"value": "@variables('target_table_name')",
 											"type": "Expression"
 										}
 									}
 								}
 							]
+						},
+						{
+							"name": "Set target tablename",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "target_table_name",
+								"value": "@concat(item().schema_name, '_' , item().table_name)"
+							}
 						}
 					]
 				}
@@ -225,6 +246,11 @@
 				}
 			}
 		],
+		"variables": {
+			"target_table_name": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},
