@@ -48,7 +48,7 @@
 							},
 							"detect_table_delete": {
 								"type": "Boolean",
-								"value": null
+								"value": "true"
 							},
 							"detect_user_delete": {
 								"type": "Boolean",
@@ -56,7 +56,7 @@
 							},
 							"detect_view_delete": {
 								"type": "Boolean",
-								"value": null
+								"value": "true"
 							}
 						}
 					},
@@ -128,7 +128,10 @@
 										},
 										"obj_id": {
 											"type": "Int32",
-											"value": "@item().obj_id"
+											"value": {
+												"value": "@item().obj_id",
+												"type": "Expression"
+											}
 										},
 										"output": {
 											"type": "String",
