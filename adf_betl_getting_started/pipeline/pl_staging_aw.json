@@ -157,7 +157,7 @@
 											"type": "Expression"
 										},
 										"table_name": {
-											"value": "@concat( item().schema_name, '_' , item().table_name)",
+											"value": "@concat( item().target_table_name)",
 											"type": "Expression"
 										}
 									}
@@ -181,7 +181,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''['\n,variables('target_schema_name')\n,'].'\n, item().schema_name, '_' , item().table_name\n, ''') AND type in (N''U'')) DROP TABLE ['\n,variables('target_schema_name')\n,'].['\n, item().schema_name, '_' , item().table_name\n, '] select 1 result '\n)}\n",
+										"value": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''['\n,variables('target_schema_name')\n,'].'\n, item().target_table_name\n, ''') AND type in (N''U'')) DROP TABLE ['\n,variables('target_schema_name')\n,'].['\n, item().target_table_name\n, '] select 1 result '\n)}\n",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -223,7 +223,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
