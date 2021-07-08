@@ -178,7 +178,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@activity('generate_create_table_ddl').output.firstRow._output",
+										"value": "@concat( activity('generate_create_table_ddl').output.firstRow._output, \n'select 0 result')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
