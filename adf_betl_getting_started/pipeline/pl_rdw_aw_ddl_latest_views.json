@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup_rdw_tables').output.value",
+						"value": "@activity('Lookup_rdw_latest_views').output.value",
 						"type": "Expression"
 					},
 					"activities": [
@@ -135,7 +135,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom obj_ext o\nwhere \nis_definition=0\nand obj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'rdw'\nand obj_name like 'aw_%'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom obj_ext o\nwhere \nis_definition=1\nand obj_type = 'view'\nand db_name = 'sqldb-rdw'\nand schema_name = 'rdw'\nand obj_name like 'aw_%'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
