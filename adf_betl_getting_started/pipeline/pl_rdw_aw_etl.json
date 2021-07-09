@@ -6,14 +6,7 @@
 				"name": "Lookup_rdw_tables",
 				"description": "just select all tables in schema staging_aw",
 				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "refresh_obj_tree_rdw2",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -145,84 +138,6 @@
 						}
 					]
 				}
-			},
-			{
-				"name": "refresh_obj_tree_rdw2",
-				"description": "make sure that the meta data is up to date",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": {
-							"value": "@variables('obj_tree_sql')",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"sink": {
-						"type": "AzureSqlSink",
-						"sqlWriterStoredProcedureName": "[dbo].[ingest_obj_tree]",
-						"sqlWriterTableType": "ObjTreeTableParam",
-						"storedProcedureTableTypeParameterName": "obj_tree_param",
-						"storedProcedureParameters": {
-							"batch_id": {
-								"type": "Int32",
-								"value": null
-							},
-							"detect_schema_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"detect_table_delete": {
-								"type": "Boolean",
-								"value": "true"
-							},
-							"detect_user_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"detect_view_delete": {
-								"type": "Boolean",
-								"value": "true"
-							}
-						}
-					},
-					"enableStaging": false,
-					"translator": {
-						"type": "TabularTranslator",
-						"typeConversion": true,
-						"typeConversionSettings": {
-							"allowDataTruncation": true,
-							"treatBooleanAsNumber": false
-						}
-					}
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_rdw",
-						"type": "DatasetReference",
-						"parameters": {
-							"schema_name": "dbo",
-							"table_name": "Dummy"
-						}
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_betl",
-						"type": "DatasetReference"
-					}
-				]
 			}
 		],
 		"variables": {
