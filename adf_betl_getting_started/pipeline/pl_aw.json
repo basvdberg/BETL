@@ -16,7 +16,7 @@
 				}
 			},
 			{
-				"name": "pl_rdw",
+				"name": "pl_rdw_ddl",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -29,7 +29,27 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw",
+						"referenceName": "pl_rdw_aw_ddl",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "pl_rdw_etl",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "pl_rdw_ddl",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_rdw_aw_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
