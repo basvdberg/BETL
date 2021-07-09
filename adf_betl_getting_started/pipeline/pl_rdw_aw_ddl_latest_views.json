@@ -114,7 +114,7 @@
 			},
 			{
 				"name": "Lookup_rdw_latest_views",
-				"description": "just select all tables in schema staging_aw",
+				"description": "",
 				"type": "Lookup",
 				"dependsOn": [
 					{
@@ -149,7 +149,14 @@
 			{
 				"name": "update_rdw_his_latest_view_def",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "lookup_obj_tree_sql",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -195,7 +202,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "@variables('obj_tree_sql')",
+							"value": "@activity('lookup_obj_tree_sql').output.firstRow.template_code",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -255,13 +262,33 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "lookup_obj_tree_sql",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select template_code from static.template \nwhere template_name = 'obj_tree_ms_sql_server'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
-		"variables": {
-			"obj_tree_sql": {
-				"type": "String"
-			}
-		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},
