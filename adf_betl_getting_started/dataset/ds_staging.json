@@ -7,10 +7,12 @@
 		},
 		"parameters": {
 			"schema_name": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "dbo"
 			},
 			"table_name": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "Dummy"
 			}
 		},
 		"annotations": [],
