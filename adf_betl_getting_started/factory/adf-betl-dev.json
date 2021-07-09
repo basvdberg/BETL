@@ -1,0 +1,17 @@
+{
+	"name": "adf-betl-dev",
+	"properties": {
+		"globalParameters": {
+			"Environment": {
+				"type": "String",
+				"value": "dev"
+			}
+		}
+	},
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "9f8e2a28-4d6a-4b81-8de5-583efc88fe76",
+		"tenantId": "a91d9163-466c-4179-aee2-ef8cb39e4326"
+	}
+}

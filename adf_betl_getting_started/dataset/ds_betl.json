@@ -1,0 +1,13 @@
+{
+	"name": "ds_betl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sqldb_betl",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
