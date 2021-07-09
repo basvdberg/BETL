@@ -172,7 +172,7 @@
 				}
 			},
 			{
-				"name": "refresh_obj_tree_rdw2",
+				"name": "refresh_obj_tree_rdw",
 				"description": "make sure that the meta data is up to date",
 				"type": "Copy",
 				"dependsOn": [
