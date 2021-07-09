@@ -273,7 +273,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "update_staging_meta_data",
+						"activity": "ForEachStagingTable",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -357,7 +357,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ForEachStagingTable",
+						"activity": "ingest_obj_tree_staging",
 						"dependencyConditions": [
 							"Succeeded"
 						]
