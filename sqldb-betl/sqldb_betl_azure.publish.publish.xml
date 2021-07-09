@@ -4,7 +4,7 @@
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseName>sqldb-betl-o</TargetDatabaseName>
     <DeployScriptFileName>sqldb_betl.sql</DeployScriptFileName>
-    <TargetConnectionString>Data Source=sqls-betl-o.database.windows.net;Persist Security Info=True;User ID=sqls-betl-o-admin-bas;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False</TargetConnectionString>
+    <TargetConnectionString>Data Source=ss.database.windows.net;Persist Security Info=True;Pooling=False;MultipleActiveResultSets=False;Connect Timeout=60;Encrypt=True;TrustServerCertificate=False</TargetConnectionString>
     <BlockOnPossibleDataLoss>True</BlockOnPossibleDataLoss>
     <DatabaseEdition>Basic</DatabaseEdition>
     <DatabaseServiceObjective>Basic</DatabaseServiceObjective>
