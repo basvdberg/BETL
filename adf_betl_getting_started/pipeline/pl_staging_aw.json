@@ -273,7 +273,7 @@
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "ForEachStagingTable",
+						"activity": "update_staging_meta_data",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -351,6 +351,38 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "update_staging_meta_data",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "ForEachStagingTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[dbo].[update_staging_meta_data]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
 		"variables": {
