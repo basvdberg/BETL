@@ -183,19 +183,24 @@
 											"value": "false"
 										},
 										"parent_batch_id": {
-											"type": "Int32"
+											"type": "Int32",
+											"value": "-1"
 										},
 										"result_set": {
-											"type": "Boolean"
+											"type": "Boolean",
+											"value": "1"
 										},
 										"src_obj_id": {
-											"type": "Int32"
+											"type": "Int32",
+											"value": "-1"
 										},
 										"transfer_guid": {
-											"type": "String"
+											"type": "String",
+											"value": "@pipeline().RunId"
 										},
 										"transfer_id": {
-											"type": "Int32"
+											"type": "Int32",
+											"value": "-1"
 										},
 										"transfer_name": {
 											"type": "String",
@@ -205,10 +210,12 @@
 											}
 										},
 										"trg_obj_id": {
-											"type": "Int32"
+											"type": "Int32",
+											"value": "-1"
 										},
 										"trg_obj_name": {
-											"type": "String"
+											"type": "String",
+											"value": "unknown"
 										}
 									},
 									"queryTimeout": "02:00:00",
