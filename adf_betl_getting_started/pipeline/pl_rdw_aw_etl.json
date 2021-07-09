@@ -120,7 +120,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat( \n\nreplace( activity('generate_insert_rdw_sql').output.firstRow._output, \n'<<transfer_id>>', '-1'),\n\n'select 0 result')",
+										"value": "@concat( \n\nreplace( activity('generate_insert_rdw_sql').output.firstRow._output, \n'<<_transfer_id>>', '-1'),\n\n'select 0 result')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -161,7 +161,11 @@
 									"sqlReaderStoredProcedureName": "[dbo].[start_transfer]",
 									"storedProcedureParameters": {
 										"batch_guid": {
-											"type": "String"
+											"type": "String",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
 										},
 										"batch_id": {
 											"type": "Int32",
@@ -191,7 +195,7 @@
 										"transfer_name": {
 											"type": "String",
 											"value": {
-												"value": "@concat(pipeline().Pipeline\n, '_'\n, item().full_object_name)",
+												"value": "@concat(pipeline().Pipeline\n, '_'\n, item().full_obj_name)",
 												"type": "Expression"
 											}
 										},
