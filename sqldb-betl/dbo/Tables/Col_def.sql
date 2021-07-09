@@ -1,5 +1,5 @@
 ﻿CREATE TABLE [dbo].[Col_def] (
-    [col_def_id]           INT            IDENTITY (1, 1) NOT NULL,
+    [col_def_id]           INT            IDENTITY (-10, -1) NOT NULL,
     [obj_def_id]           INT            NOT NULL,
     [ordinal_position]     SMALLINT       NULL,
     [column_name]          [sysname]      NOT NULL,
@@ -20,4 +20,6 @@
     CONSTRAINT [PK_Col_def] PRIMARY KEY CLUSTERED ([col_def_id] DESC),
     CONSTRAINT [FK_Col_def_Obj_def] FOREIGN KEY ([obj_def_id]) REFERENCES [dbo].[Obj_def] ([obj_def_id])
 );
+
+
 

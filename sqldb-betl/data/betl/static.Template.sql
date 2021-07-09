@@ -18,26 +18,6 @@ FROM {{schema_name}}.[{{obj_name}}]
 ''
 -- end staging_create_view_h {{schema_name}}.{{obj_name}}[{{obj_id}}]
 ',N'this view can be used for transformation between staging and rdw. e.g. xml columns are transformed into nvarchar(max)',N'ddl','2020-03-25T10:27:42.713',N'')
- ,(2000,N'rdw_create_table',N'-- begin rdw_create_table rdw.{{obj_name}}[{{obj_id}}]
-IF OBJECT_ID(''rdw.{{obj_name}}'', ''U'') IS NULL 
-	CREATE TABLE rdw.{{obj_name}} (
-	{{#each columns}}
-		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
-	{{/each}}
-	)
-
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''PK_rdw_{{obj_name}}_{{obj_id}}'')
-ALTER TABLE rdw.{{obj_name}} ADD CONSTRAINT
-	PK_rdw_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
-	(
-	{{#each columns}}
-		{{#if primary_key_sorting}}
-			[{{column_name}}] {{primary_key_sorting}}
-			{{#unless @last}},{{/unless}}
-		{{/if}}
-	{{/each}}
-	) 
--- end rdw_create_table rdw.{{obj_name}}[{{obj_id}}]',N'this template is used e.g. to generate create table DDL from objects in the object tree',N'ddl','2020-03-11T10:42:01.060',N'')
  ,(2010,N'drop_and_create_latest_view',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 
 DROP VIEW IF EXISTS {{schema_name}}.[{{obj_name}}]
@@ -132,7 +112,7 @@ IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL
 
 CREATE TABLE {{schema_name}}.{{obj_name}} (
 	{{#each columns}}
-		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
+		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{#if column_type_id in (200)}}IDENTITY{{/if}}{{default_value}}{{#unless @last}},{{/unless}}
 	{{/each}}
 	)
 
@@ -210,7 +190,7 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 
 ',NULL,N'ddl','2020-04-15T12:53:01.730',N'')
  ,(4000,N'rdw_insert',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
--- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
+-- exec [dbo].[parse_handlebars] {{obj_id}}, ''''{{template_name}}''''
 -- obj_id is historic rdw table ( we need access to src and trg)
 -- E.g. staging.Customer_exp (src) -> rdw.Customer_h (obj_id) -> rdw.Customer ( trg)
 
@@ -227,7 +207,7 @@ INSERT INTO {{schema_name}}.[{{obj_name}}](
 , _eff_dt
 , _transfer_id
 )
-select q.*, @now _eff_dt , {{_transfer_id}} _transfer_id
+select q.*, @now _eff_dt , <<_transfer_id>> _transfer_id -- please replace transfer_id runtime 
 FROM ( 
 	select changed_and_new.*, null delete_dt
 	FROM (
@@ -270,8 +250,7 @@ FROM (
 ) q 
 
 select @@rowcount rec_cnt_new
--- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
-',NULL,N'etl','2020-04-20T15:06:01.930',N'')
+-- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  ',NULL,N'etl','2020-04-20T15:06:01.930',N'')
  ,(5000,N'create_table_if_not_exists_identity',N'-- begin create_table_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NULL 
 	CREATE TABLE {{schema_name}}.{{obj_name}} (
@@ -423,7 +402,92 @@ from (
 select @@rowcount rec_cnt_new
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 ',NULL,N'etl','2020-06-30T08:23:10.940',N'')
- ,(6200,N'obj_tree_ms_sql_server',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+ ,(6200,N'obj_tree_ms_sql_server',N'-- get all databases, schemas, tables, views and columns. 
+select 
+	null src_obj_id
+	, isnull(o.object_id, db.database_id) external_obj_id 
+	,  case 
+		when SERVERPROPERTY(''EngineEdition'') < 4 then 15 -- on premise
+		when SERVERPROPERTY(''EngineEdition'') >= 5 then 10 -- azure
+	  end  server_type_id
+	, @@SERVERNAME server_name 
+	, db.name db_name
+	, s.name [schema_name]
+	, o.name as obj_name 
+	, case 
+			when o.type = ''U'' then 10 
+			when o.type = ''V'' then 20 
+			when s.name is not null then 30
+			when db.name is not null then 40 
+			else 50 -- server
+	  end obj_type_id 
+	, c.column_id ordinal_position
+	, c.name column_name
+	, null column_type_id
+	, convert(int, c.is_nullable) is_nullable
+	, t.name data_type   
+	, case when t.name in (''nvarchar'', ''nchar'') then c.max_length /2 else c.max_length end max_len
+	, case when t.name in (''decimal'', ''numeric'') then c.precision else cast(null as int) end numeric_precision
+	, case when t.name in (''decimal'', ''numeric'') then ODBCSCALE(c.system_type_id, c.scale) else cast(null as int) end numeric_scale
+	, case when ic.is_descending_key=0 then ''ASC''when ic.is_descending_key=1 then ''DESC''else null end [primary_key_sorting]
+	, convert(nvarchar(4000),  
+	  OBJECT_DEFINITION(c.default_object_id))   AS [default_value]
+	, null _source
+from
+	sys.databases db
+	full outer join sys.schemas s on db.database_id = db_id()
+	left join sys.objects o on o.schema_id = s.schema_id
+	and o.type in ( ''U'',''V'') -- only tables and views
+	and o.object_id not in 
+		(
+		select major_id 
+		from sys.extended_properties  
+		where name = N''microsoft_database_tools_support'' 
+		and minor_id = 0 and class = 1) -- exclude ssms diagram objects
+	left join sys.columns c on c.object_id = o.object_id 
+	left join sys.types t on c.user_type_id = t.user_type_id 
+	--  = s.name and col.table_name = o.name
+	--	left join sys.columns col on 
+	--col.table_schema = s.name 
+		--and col.table_name = o.name 
+		--and col.COLUMN_NAME=c.name
+	left join sys.indexes i on 
+		i.object_id = o.object_id 
+		and i.is_primary_key = 1
+	left join sys.index_columns ic on 
+		ic.object_id = o.object_id 
+		and ic.column_id = c.column_id
+where 
+	isnull(s.name,'''') not in ( ''sys'', ''INFORMATION_SCHEMA'', ''guest'') 
+	and isnull(s.name,'''') not like ''db[_]%''
+	and db.name not in (''master'',''model'',''msdb'',''tempdb'')
+-- add users
+union all 
+
+select null src_obj_id
+	, suser_sid() external_obj_id
+	,  case 
+		when SERVERPROPERTY(''EngineEdition'') < 4 then 15 -- on premise
+		when SERVERPROPERTY(''EngineEdition'') >= 5 then 10 -- azure
+	  end  server_type 
+	, @@SERVERNAME server_name 
+	, db_name() db_name
+	, null [schema_name]
+	, suser_sname()  obj_name
+	, 60 obj_type_id -- user
+	, null ordinal_position
+	, null column_name
+	, null column_type_id
+	, null is_nullable
+	, null data_type
+	, null
+	, null
+	, null
+	, null
+	, null
+	, null
+',NULL,N'ddl','2021-03-29T21:07:28.417',N'AzureAD\BasvandenBerg')
+ ,(6250,N'obj_tree_ms_sql_server_db_param',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
 
 select 
@@ -509,7 +573,7 @@ select null, suser_sid()
 	, null
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 ```
-',NULL,N'ddl','2021-03-29T21:07:28.417',N'AzureAD\BasvandenBerg')
+',NULL,N'ddl','2021-07-07T15:19:36.110',N'sa_sqls-betl-dev')
  ,(6300,N'ingest_obj_tree_ms_sql_server',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
 
@@ -645,5 +709,3 @@ GO
 
 SET NOCOUNT OFF
 GO
-
-

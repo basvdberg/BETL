@@ -14,7 +14,7 @@ select dbo.obj_id'', null) --> points to db
 select * from dbo.Obj
 
 
-select dbo.obj_id('AzureAD\BasvandenBerg')
+select dbo.obj_id('sqldb-aw')
 select dbo.obj_id('[betl].AzureAD\BasvandenBerg')
 
 */
@@ -45,28 +45,35 @@ BEGIN
 	select @elem2 = item from @t where i=@cnt_elems-1
 	select @elem3 = item from @t where i=@cnt_elems-2
 	select @elem4 = item from @t where i=@cnt_elems-3
-	select @obj_id= max(o.obj_id), @cnt = count(*) 
-	from dbo.[Obj] o
-	LEFT OUTER JOIN dbo.[Obj] AS parent_o ON o.parent_id = parent_o.[obj_id] 
-	LEFT OUTER JOIN dbo.[Obj] AS grand_parent_o ON parent_o.parent_id = grand_parent_o.[obj_id] 
-	LEFT OUTER JOIN dbo.[Obj] AS great_grand_parent_o ON grand_parent_o.parent_id = great_grand_parent_o.[obj_id] 
-	where 
-	(
-		o._delete_dt is null 
-		and o.obj_type_id<> 60 -- not a user
-		and o.[obj_name] = @elem1 
-		and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
-		and ( @elem3 is null or grand_parent_o.[obj_name] = @elem3) 
-		and ( @elem4 is null or great_grand_parent_o.[obj_name] = @elem4) 
+	;
+	with lookup as( 
+		select 
+			o.obj_id
+			, row_number() over (partition by o.obj_name order by o.is_definition asc) rn
+		from dbo.[Obj] o
+		LEFT OUTER JOIN dbo.[Obj] AS parent_o ON o.parent_id = parent_o.[obj_id] 
+		LEFT OUTER JOIN dbo.[Obj] AS grand_parent_o ON parent_o.parent_id = grand_parent_o.[obj_id] 
+		LEFT OUTER JOIN dbo.[Obj] AS great_grand_parent_o ON grand_parent_o.parent_id = great_grand_parent_o.[obj_id] 
+		where 
+		(
+			o._delete_dt is null 
+			and o.obj_type_id<> 60 -- not a user
+			and o.[obj_name] = @elem1 
+			and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
+			and ( @elem3 is null or grand_parent_o.[obj_name] = @elem3) 
+			and ( @elem4 is null or great_grand_parent_o.[obj_name] = @elem4) 
+		) 
+		or 
+		(
+			o._delete_dt is null 
+			and o.obj_type_id=60 -- user
+			and o.[obj_name] = @elem1 
+			and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
+		) 
 	) 
-	or 
-	(
-		o._delete_dt is null 
-		and o.obj_type_id=60 -- user
-		and o.[obj_name] = @elem1 
-		and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
-	) 
-
+	select @obj_id = max(obj_id) , @cnt= count(*) 
+	from lookup 
+	where rn=1 
 	
 	declare @res as int
 	if @cnt >1 

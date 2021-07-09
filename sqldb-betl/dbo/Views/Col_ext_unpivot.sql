@@ -19,7 +19,7 @@ CREATE view [dbo].[Col_ext_unpivot] as
    	, case when is_nullable=0 or ( column_type_id in (100,200) )   then 'NOT NULL' else 'NULL' end is_nullable
       ,[ordinal_position]
       , case when data_type in ('money', 'smallmoney')  then 'decimal' else data_type end data_type
-	  , case when data_type in ( 'varchar', 'nvarchar', 'char', 'nchar', 'varbinary') then  isnull('('+ case when max_len<0 then 'MAX' else convert(varchar(10), max_len ) end + ')', '')
+	  , case when data_type in ( 'varchar', 'nvarchar', 'char', 'nchar', 'varbinary') then  isnull('('+ case when max_len<=0 then 'MAX' else convert(varchar(10), max_len ) end + ')', '')
 			   when numeric_precision is not null then '('+ convert(varchar(10), numeric_precision) +  
 														isnull ( ',' + convert(varchar(10), numeric_scale), '') + ')' 
 				else null

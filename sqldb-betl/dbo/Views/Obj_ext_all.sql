@@ -1,5 +1,8 @@
 ﻿
 
+
+
+
 -- select * from dbo.obj_ext_all
 -- select * from obj_ext_all where obj_name like '%AzureAD\BasvandenBerg%'
 
@@ -32,11 +35,13 @@ AS
                   o.server_type_id,
                   o.identifier,
                   o.src_obj_id,
-                  o.external_obj_id
+                  o.external_obj_id,
 				  --,ot.parent_obj_type_id
                   --, dbo.get_prop_obj_id('source', o.obj_id) 
-                  ,
+
                   pv.value                      _source
+				  ,				  o.is_definition
+
            FROM   dbo.obj AS o
                   INNER JOIN static.obj_type AS ot
                           ON o.obj_type_id = ot.obj_type_id
@@ -113,9 +118,11 @@ obj_type_id	obj_type	obj_type_level
                   src_obj_id,
                   external_obj_id,
                   _source
+				  ,is_definition
            FROM   q AS q_1)
-  SELECT q2_1.obj_id,
-         CASE
+  SELECT q2_1.obj_id
+		 ,is_definition
+         ,CASE
            WHEN obj_type IN ( 'server' ) THEN [obj_name]
            WHEN obj_type IN ( 'user' ) THEN Isnull(Quotename(db_name)+'.', '')+ [obj_name]
            ELSE Isnull(Quotename(CASE WHEN srv <> 'LOCALHOST' THEN srv ELSE NULL
@@ -150,6 +157,7 @@ obj_type_id	obj_type	obj_type_level
          src_obj_id,
          external_obj_id,
          _source
+
   FROM   q2 AS q2_1
          LEFT OUTER JOIN dbo.prefix AS p
                       ON q2_1.prefix = p.prefix_name
