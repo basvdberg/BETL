@@ -98,7 +98,7 @@
 							}
 						},
 						{
-							"name": "exec_insert_rdw_copy1",
+							"name": "exec_insert_rdw",
 							"type": "Lookup",
 							"dependsOn": [
 								{
