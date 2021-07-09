@@ -547,7 +547,7 @@
 					},
 					"activities": [
 						{
-							"name": "generate_insert_rdw_sql_copy1",
+							"name": "generate_insert_rdw_sql",
 							"type": "Lookup",
 							"dependsOn": [],
 							"policy": {
@@ -601,7 +601,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "generate_insert_rdw_sql_copy1",
+									"activity": "generate_insert_rdw_sql",
 									"dependencyConditions": [
 										"Succeeded"
 									]
