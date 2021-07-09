@@ -102,7 +102,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "start_transfer",
+									"activity": "generate_insert_rdw_sql",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -133,85 +133,6 @@
 										"schema_name": "dbo",
 										"table_name": "Dummy"
 									}
-								}
-							}
-						},
-						{
-							"name": "start_transfer",
-							"type": "Lookup",
-							"dependsOn": [
-								{
-									"activity": "generate_insert_rdw_sql",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderStoredProcedureName": "[dbo].[start_transfer]",
-									"storedProcedureParameters": {
-										"batch_guid": {
-											"type": "String",
-											"value": {
-												"value": "@pipeline().RunId",
-												"type": "Expression"
-											}
-										},
-										"batch_id": {
-											"type": "Int32",
-											"value": "-1"
-										},
-										"batch_name": {
-											"type": "String"
-										},
-										"is_running": {
-											"type": "Boolean"
-										},
-										"parent_batch_id": {
-											"type": "Int32"
-										},
-										"result_set": {
-											"type": "Boolean"
-										},
-										"src_obj_id": {
-											"type": "Int32"
-										},
-										"transfer_guid": {
-											"type": "String"
-										},
-										"transfer_id": {
-											"type": "Int32"
-										},
-										"transfer_name": {
-											"type": "String",
-											"value": {
-												"value": "@concat(pipeline().Pipeline\n, '_'\n, item().full_obj_name)",
-												"type": "Expression"
-											}
-										},
-										"trg_obj_id": {
-											"type": "Int32"
-										},
-										"trg_obj_name": {
-											"type": "String"
-										}
-									},
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "ds_betl",
-									"type": "DatasetReference"
 								}
 							}
 						}
