@@ -18,7 +18,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\nfrom obj_ext o\nwhere \nis_definition=0\nand obj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'rdw'\nand obj_name like 'aw_%'",
+						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\n,o.full_obj_name\nfrom obj_ext o\nwhere \nis_definition=0\nand obj_type = 'table'\nand db_name = 'sqldb-rdw'\nand schema_name = 'rdw'\nand obj_name like 'aw_%'",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -102,7 +102,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "generate_insert_rdw_sql",
+									"activity": "start_transfer",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -120,7 +120,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat( activity('generate_insert_rdw_sql').output.firstRow._output, \n'select 0 result')",
+										"value": "@concat( \n\nreplace( activity('generate_insert_rdw_sql').output.firstRow._output, \n'<<transfer_id>>', '-1'),\n\n'select 0 result')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -133,6 +133,81 @@
 										"schema_name": "dbo",
 										"table_name": "Dummy"
 									}
+								}
+							}
+						},
+						{
+							"name": "start_transfer",
+							"type": "Lookup",
+							"dependsOn": [
+								{
+									"activity": "generate_insert_rdw_sql",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderStoredProcedureName": "[dbo].[start_transfer]",
+									"storedProcedureParameters": {
+										"batch_guid": {
+											"type": "String"
+										},
+										"batch_id": {
+											"type": "Int32",
+											"value": "-1"
+										},
+										"batch_name": {
+											"type": "String"
+										},
+										"is_running": {
+											"type": "Boolean"
+										},
+										"parent_batch_id": {
+											"type": "Int32"
+										},
+										"result_set": {
+											"type": "Boolean"
+										},
+										"src_obj_id": {
+											"type": "Int32"
+										},
+										"transfer_guid": {
+											"type": "String"
+										},
+										"transfer_id": {
+											"type": "Int32"
+										},
+										"transfer_name": {
+											"type": "String",
+											"value": {
+												"value": "@concat(pipeline().Pipeline\n, '_'\n, item().full_object_name)",
+												"type": "Expression"
+											}
+										},
+										"trg_obj_id": {
+											"type": "Int32"
+										},
+										"trg_obj_name": {
+											"type": "String"
+										}
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_betl",
+									"type": "DatasetReference"
 								}
 							}
 						}
