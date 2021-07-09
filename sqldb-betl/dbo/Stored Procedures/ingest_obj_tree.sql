@@ -64,7 +64,6 @@ begin
 	exec log @batch_id, 'var', '@rec_cnt_src = ?', @rec_cnt_src
 
 	DECLARE @C TABLE (act tinyint) -- act 1= insert , 2 = update, 3= delete , 4= undelete
-
 	exec dbo.start_transfer @batch_id = @batch_id output, @transfer_id=@transfer_id output, @transfer_name= @proc_name, @result_set = 0 
 	--begin try 
 	--begin transaction 
@@ -76,11 +75,13 @@ begin
 		
 		MERGE [dbo].[Obj] trg
 		USING #servers src
-		ON (trg.obj_name = src.server_name and trg.obj_type_id = 50) 
+		ON (trg.obj_name = src.server_name and trg.obj_type_id = 50 and trg.is_definition=0) 
 		WHEN NOT MATCHED THEN  -- not exists
 			insert (obj_type_id, obj_name, server_type_id, _batch_id, _create_dt) 
 			values (50, server_name, server_type_id , @batch_id, @create_dt)
-		OUTPUT 1 INTO @C;
+
+		OUTPUT 1 INTO @C
+		;
 
 		insert into @obj_tree 
 		select distinct
@@ -111,6 +112,7 @@ begin
 		  , _source
 		from @obj_tree_param src --@obj_tree_param src
 		inner join dbo.obj s on src.server_name = s.obj_name and s.obj_type_id=50 and s.server_type_id = src.server_type_id --lookup server
+			and s.is_definition=0
 		left join 		
 		( 
 			select distinct external_obj_id, util.prefix_first_underscore(obj_name) prefix , obj_name
@@ -128,7 +130,7 @@ begin
 
 		MERGE [dbo].[Obj] trg
 		USING #dbs src
-		ON (trg.obj_name = src.db_name and trg.obj_type_id = 40 and trg.parent_id = src.parent_id) 
+		ON (trg.obj_name = src.db_name and trg.obj_type_id = 40 and trg.parent_id = src.parent_id and trg.is_definition=0) 
 		-- undeletes
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted
 				 UPDATE set 
@@ -171,7 +173,7 @@ begin
 
 		MERGE [dbo].[Obj] trg
 		USING #schemas src
-		ON (trg.obj_name = src.schema_name and trg.obj_type_id = 30 and trg.parent_id = src.parent_id) 
+		ON (trg.obj_name = src.schema_name and trg.obj_type_id = 30 and trg.parent_id = src.parent_id and trg.is_definition=0) 
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted  
 			UPDATE set 
 	 			_delete_dt = null -- undelete
@@ -208,7 +210,7 @@ begin
 				where obj_type_id in ( 10,20) 
 
 		)  src
-		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[schema_id] and trg.obj_type_id in (10,20) )
+		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[schema_id] and trg.obj_type_id in (10,20) and trg.is_definition=0)
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
@@ -244,7 +246,7 @@ begin
 		update o
 		set obj_id = s.obj_id
 		from @obj_tree o
-		inner join dbo.obj s on o.obj_name = s.obj_name and s.parent_id = o.schema_id and s.obj_type_id = o.obj_type_id
+		inner join dbo.obj s on o.obj_name = s.obj_name and s.parent_id = o.schema_id and s.obj_type_id = o.obj_type_id and s.is_definition=0
 
 		-- end tables, views 
 
@@ -256,7 +258,7 @@ begin
 				where obj_type_id = 60 
 
 		)  src
-		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[db_id] and trg.obj_type_id = 60 )
+		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[db_id] and trg.obj_type_id = 60 and trg.is_definition=0)
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
@@ -321,27 +323,31 @@ begin
 			UPDATE child
 			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id 
+			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=0
 			where parent._delete_dt is not null 
 			and child._delete_dt is null 
+			and child.is_definition=0
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 
 			-- if prev statement set schemas to deleted -> check again for tables and views in these schemas
 			UPDATE child
 			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id 
+			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=0
 			where parent._delete_dt is not null 
 			and child._delete_dt is null 
+			and child.is_definition=0
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 
 			-- update orphan columns
-			update col set _delete_dt = o._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
+			update col set _delete_dt = o._delete_dt, col._record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.col col
-			inner join dbo.obj o on col.obj_id = o.obj_id 
+			inner join dbo.obj o on col.obj_id = o.obj_id and o.is_definition=0
 			where 
 				o._delete_dt is not null -- parent is deleted
 				and col._delete_dt is null  -- child is not deleted
+				and col.is_definition=0
+
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 		end
 		-- end delete propagation if a database or schema is marked as deleted-> also mark descendants as deleted. 
@@ -360,9 +366,9 @@ begin
 				, src.column_type_id
 				, src.is_nullable
 				, src.data_type 
-				, src.max_len
-				, src.numeric_precision
-				, src.numeric_scale
+				, case when src.data_type not in ('int', 'smallint') then src.max_len end max_len
+				, case when src.data_type not in ('int', 'smallint') then src.numeric_precision end numeric_precision
+				, case when src.data_type not in ('int', 'smallint') then src.numeric_scale end numeric_scale
 				, src.obj_name 
 				, src.[schema_name]
 				, src.[db_name] 
@@ -424,14 +430,15 @@ begin
 		full outer join ( 
 			SELECT  h.column_name, isnull(h._chksum,0) _chksum, h._eff_dt, h.obj_id, h.column_id , h._delete_dt, h.column_type_id
 			FROM  ( select distinct obj_id obj_id from @obj_tree)  tv
-			inner join [dbo].[Col] AS h on h.obj_id = tv.obj_id
-			WHERE     (_eff_dt =
+			inner join [dbo].[Col] AS h on h.obj_id = tv.obj_id and h.is_definition=0
+		/*	WHERE     (_eff_dt =
 						  ( SELECT     MAX(_eff_dt) max_eff_dt
 							FROM       [dbo].[Col] h2
 							WHERE      h.column_id = h2.column_id
 						   )
-					  )
+					  )*/
 		) trg on src.obj_id = trg.obj_id AND src.column_name = trg.column_name	
+
 		--where 
 		--	not ( src.obj_id is null and trg.obj_id is null ) -- either in src or in target
 		--	and ( trg.obj_id is null or trg.obj_id in ( select obj_id from @obj_tree) )  -- scope is all objects that are in cols

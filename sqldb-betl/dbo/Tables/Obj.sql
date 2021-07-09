@@ -3,15 +3,16 @@
     [obj_name]           NVARCHAR (255) NOT NULL,
     [obj_type_id]        INT            NOT NULL,
     [parent_id]          INT            NULL,
+    [is_definition]      BIT            CONSTRAINT [DF_Obj_is_definition] DEFAULT ((0)) NOT NULL,
     [prefix]             NVARCHAR (50)  NULL,
     [obj_name_no_prefix] NVARCHAR (255) NULL,
     [server_type_id]     INT            NULL,
     [identifier]         INT            NULL,
     [src_obj_id]         INT            NULL,
     [external_obj_id]    INT            NULL,
-    [_create_dt]         DATETIME       NULL,
+    [_create_dt]         DATETIME       CONSTRAINT [DF_Obj__create_dt] DEFAULT (getdate()) NULL,
     [_delete_dt]         DATETIME       NULL,
-    [_batch_id]       INT            NULL,
+    [_batch_id]          INT            NULL,
     [_record_dt]         DATETIME       CONSTRAINT [DF_Obj_h_record_dt] DEFAULT (getdate()) NULL,
     [_record_user]       NVARCHAR (255) CONSTRAINT [DF_Obj_h_record_user] DEFAULT (suser_sname()) NULL,
     CONSTRAINT [PK_Obj] PRIMARY KEY CLUSTERED ([obj_id] ASC),
@@ -32,9 +33,13 @@
 
 
 
+
+
 GO
 CREATE UNIQUE NONCLUSTERED INDEX [UI_Obj_h_obj_name_obj_type_parent_id]
-    ON [dbo].[Obj]([obj_name] ASC, [obj_type_id] ASC, [parent_id] ASC);
+    ON [dbo].[Obj]([obj_name] ASC, [obj_type_id] ASC, [parent_id] ASC, [is_definition] ASC);
+
+
 
 
 GO
