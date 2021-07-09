@@ -172,10 +172,15 @@
 											"value": "-1"
 										},
 										"batch_name": {
-											"type": "String"
+											"type": "String",
+											"value": {
+												"value": "@pipeline().Pipeline",
+												"type": "Expression"
+											}
 										},
 										"is_running": {
-											"type": "Boolean"
+											"type": "Boolean",
+											"value": "false"
 										},
 										"parent_batch_id": {
 											"type": "Int32"
