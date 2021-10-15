@@ -1,6 +1,6 @@
 # BETL
 
-Go to the betl website directly using this link [https://www.c2h.com/betl](https://www.c2h.com/betl)
+Go to the betl website directly using this link [https://www.c2h.nl/betl](https://www.c2h.nl/betl)
 
 BETL is a data warehouse automation framework. I allows you to generate ETL and DDL. Orchestration needs an ETL tool, but you can use the BETL meta data to build a generic orchestration process. 
 
