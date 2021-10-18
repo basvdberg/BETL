@@ -53,7 +53,7 @@ begin
 	set @delete_dt =@now
 	set @create_dt =@now
 	
-	exec dbo.start_batch @batch_id=@batch_id output, @batch_name = @proc_name
+	exec dbo.start_batch @batch_id=@batch_id output, @batch_name = @proc_name, @result_set=0
 
 	-- standard BETL header code... 
 	set nocount on 
