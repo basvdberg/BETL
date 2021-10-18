@@ -67,8 +67,8 @@ BEGIN
 		(
 			o._delete_dt is null 
 			and o.obj_type_id=60 -- user
-			and o.[obj_name] = @elem1 
-			and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
+			and o.[obj_name] = @full_obj_name --@elem1 
+			--and ( @elem2 is null or parent_o.[obj_name] = @elem2 ) 
 		) 
 	) 
 	select @obj_id = max(obj_id) , @cnt= count(*) 
