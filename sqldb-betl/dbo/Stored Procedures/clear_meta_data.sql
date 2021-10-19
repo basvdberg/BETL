@@ -18,6 +18,7 @@ begin
 	delete from dbo.obj_map
 	delete from obj_def
 	delete from dbo.obj
+	truncate table dbo.Cache_user_data
 
 	exec dbo.init_meta_data
 end

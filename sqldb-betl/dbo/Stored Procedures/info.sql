@@ -25,7 +25,7 @@ BEGIN
 	--	exec show_error 'Object ? not found ', @full_obj_name
 	--else 
 	--	exec dbo.log @batch_id, 'INFO', 'obj_id ?', @obj_id 
-	print 'test'	
+	--print 'test'	
 	set @search = replace (@full_obj_name, @@SERVERNAME , 'LOCALHOST') 
 	declare @replacer as ParamTable
 	insert into @replacer values ( '[', '![')
@@ -56,14 +56,19 @@ BEGIN
 	) 
 	
 
+	-- select objects
 	select o.* 
 	from dbo.obj_ext o 
 	inner join @objects os on o.obj_id = os.obj_id
 	order by o.obj_id
+
+	-- select columns
 	select c.*
 	from [dbo].[Col_ext] c
 	inner join @objects os on os.obj_id = c.obj_id
 	order by c.ordinal_position asc
+	
+	-- select properties
 	select p.*
 	from [dbo].[Prop_ext] p
 	inner join @objects os on os.obj_id = p.obj_id

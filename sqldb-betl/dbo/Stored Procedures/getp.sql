@@ -58,13 +58,10 @@ begin
 			exec dbo.log @batch_id =@batch_id, @log_type ='error', @msg ='Property ? is not enabled in static.Property', @i1 =@prop, @simple_mode = 1
 		end 
 
-
 		-- scope is not null 
 		if @property_scope = 'user' -- then we need an obj_id 
-		begin
+--			set @full_obj_name =  replace(suser_sname(), '.', '_') -- because . is a special symbol for object names e.g. dbo.table 
 			set @full_obj_name =  suser_sname()
-		end
-
 		select @obj_id = dbo.obj_id(@full_obj_name )
 		if @debug = 1 exec dbo.log @batch_id =@batch_id, @log_type ='var', @msg ='Lookup ?(?) ', @i1 =@full_obj_name, @i2=@obj_id ,  @simple_mode = 1
 
@@ -73,8 +70,10 @@ begin
 		begin
 			if @property_scope = 'user' -- then create obj_id 
 			begin
-				insert into dbo.Obj	(obj_type_id, obj_name)
-				values(60, @full_obj_name)
+				insert into dbo.Obj	(obj_type_id, obj_name, server_type_id)
+				values(60, @full_obj_name, -1)
+				-- server type should be Azure AD or sql auth, but for this info we need to access the master
+				-- database sys.database_principals and we cannot do that here. 
 
 				select @obj_id = dbo.obj_id(@full_obj_name)
 				if @debug = 1 exec dbo.log @batch_id =@batch_id, @log_type ='var', @msg ='Created object ?(?) ', @i1 =@full_obj_name, @i2=@obj_id ,  @simple_mode = 1

@@ -9,8 +9,8 @@ print @batch_id
 */
 CREATE procedure [dbo].[end_batch] 
 	@batch_id int output ,
-	@status as varchar(255) 
-
+	@status as varchar(255),
+	@result_set as bit=0
 as 
 begin 
 	declare @status_id as int 
@@ -32,5 +32,6 @@ begin
 	footer:
 	exec dbo.log_batch @batch_id , 'footer', '? ?(?)', @proc_name ,  @batch_id, @status
 
-	select 'done' status
+	if @result_set=1 
+		select 'done' status
 end
