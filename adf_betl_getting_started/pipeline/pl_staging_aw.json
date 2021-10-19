@@ -257,7 +257,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext\nselect 'done' result",
+						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[ProductModel]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext\nselect 'done' result",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
