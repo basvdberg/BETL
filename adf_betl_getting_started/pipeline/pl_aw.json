@@ -16,47 +16,7 @@
 				}
 			},
 			{
-				"name": "pl_rdw_ddl_latest_views",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "pl_rdw_ddl_his_tables",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_rdw_aw_ddl_latest_views",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "pl_rdw_etl",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "pl_rdw_ddl_latest_views",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_rdw_aw_etl",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "pl_rdw_ddl_his_tables",
+				"name": "pl_rdw",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -69,7 +29,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw_ddl_his_tables",
+						"referenceName": "pl_rdw",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
