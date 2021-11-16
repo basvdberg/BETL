@@ -444,7 +444,7 @@
 				"typeProperties": {
 					"variableName": "template_name",
 					"value": {
-						"value": "/* only drop tables on your dev environment */\n@if(\n  equals(\n    pipeline().globalParameters.Environment,   'dev'\n     )\n, 'drop_and_create_table' , 'create_table' )\n",
+						"value": "@if(\n  equals(\n    pipeline().globalParameters.Environment,   'dev'\n     )\n, 'drop_and_create_table' , 'create_table' )\n",
 						"type": "Expression"
 					}
 				}
