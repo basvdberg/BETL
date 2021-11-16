@@ -143,7 +143,10 @@
 										},
 										"template_name": {
 											"type": "String",
-											"value": "drop_and_create_table"
+											"value": {
+												"value": "@variables('template_name')",
+												"type": "Expression"
+											}
 										}
 									},
 									"queryTimeout": "02:00:00",
@@ -387,7 +390,14 @@
 			{
 				"name": "Set obj_tree_sql",
 				"type": "SetVariable",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set template_name",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "obj_tree_sql",
@@ -425,11 +435,28 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Set template_name",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "template_name",
+					"value": {
+						"value": "/* only drop tables on your dev environment */\n@if(\n  equals(\n    pipeline().globalParameters.Environment,   'dev'\n     )\n, 'drop_and_create_table' , 'create_table' )\n",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"variables": {
 			"obj_tree_sql": {
 				"type": "String"
+			},
+			"template_name": {
+				"type": "String",
+				"defaultValue": "unknown"
 			}
 		},
 		"annotations": [],
