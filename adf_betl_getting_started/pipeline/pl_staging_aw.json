@@ -206,7 +206,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "set include_staging property",
+						"activity": "set include_staging and source property",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -223,7 +223,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table'",
+						"sqlReaderQuery": {
+							"value": "@select o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \n\nINTERSECT\n\nselect o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'source' and inherited_value = '@{variables('source')}'\nand pe.obj_type = 'table'",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -235,8 +238,8 @@
 				}
 			},
 			{
-				"name": "set include_staging property",
-				"description": "for demo purposes we set this in the PL",
+				"name": "set include_staging and source property",
+				"description": "Needs to be done only once, but for demo purposes we set this in the PL",
 				"type": "Lookup",
 				"dependsOn": [
 					{
@@ -257,7 +260,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '[sqldb-aw]'\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[Address]'\nexec setp 'include_staging', 0, '[sqldb-aw].[SalesLT].[ProductModel]'\nexec setp 'include_staging', 0, '[sqldb-aw].[dbo].[BuildVersion]';\n\n-- select * from prop_ext where property = 'include_staging' and inherited_value = 1 and obj_type = 'table'\n-- select * from obj_ext\nselect 'done' result",
+						"sqlReaderQuery": "-- lets take the entire aw database \nexec setp 'include_staging', 1, '@{variables('db_name')}'\n\n-- but exclude some tables that we don't need. \nexec setp 'include_staging', 0, '@{variables('db_name')}.[SalesLT].[Address]'\nexec setp 'include_staging', 0, '@{variables('db_name')}.[SalesLT].[ProductModel]'\nexec setp 'include_staging', 0, '@{variables('db_name')}.[dbo].[BuildVersion]';\n\nexec setp 'source', '@{variables('source')}', '[sqldb-aw]';\n\n-- always return something for the lookup component in ADF\nselect 'done' result",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -386,9 +389,17 @@
 			}
 		],
 		"variables": {
+			"source": {
+				"type": "String",
+				"defaultValue": "aw"
+			},
+			"db_name": {
+				"type": "String",
+				"defaultValue": "sqldb-aw"
+			},
 			"target_schema_name": {
 				"type": "String",
-				"defaultValue": "staging_aw"
+				"defaultValue": "staging-aw"
 			}
 		},
 		"annotations": [],
