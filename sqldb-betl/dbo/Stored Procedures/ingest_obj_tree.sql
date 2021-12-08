@@ -9,7 +9,7 @@
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
-FROM dbo.obj_tree_ms_sql_server
+FROM vw_staging_obj_aw
 select * from @obj_tree_param 
 exec [dbo].[ingest_obj_tree] @obj_tree_param
 
@@ -20,6 +20,9 @@ exec verbose
 */
 CREATE procedure [dbo].[ingest_obj_tree] 
 	@obj_tree_param ObjTreeTableParam READONLY  --_table_name as sysname -- this is a global temp table that is unique for this transfer
+	, @is_definition as bit = 0 -- does this object tree represent observed objects( @is_definition=0) or new objects (@is_definition=1) 
+	-- for simplicity sake we only allow definitions of tables, views and schemas ( no other objects). 
+
 	, @batch_id as int = -1 
 	, @detect_table_delete as bit =0
 	, @detect_view_delete as bit =0
@@ -173,15 +176,16 @@ begin
 
 		MERGE [dbo].[Obj] trg
 		USING #schemas src
-		ON (trg.obj_name = src.schema_name and trg.obj_type_id = 30 and trg.parent_id = src.parent_id and trg.is_definition=0) 
+		ON (trg.obj_name = src.schema_name and trg.obj_type_id = 30 and trg.parent_id = src.parent_id and trg.is_definition=@is_definition) 
 		WHEN MATCHED and trg._delete_dt is not null THEN -- exists, but marked as deleted  
 			UPDATE set 
 	 			_delete_dt = null -- undelete
 				,_record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  
 		WHEN NOT MATCHED THEN  -- not exists->insert
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, _create_dt)  
-			VALUES (30, src.[schema_name], parent_id, server_type_id, @batch_id, @create_dt)  
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, _create_dt, is_definition)  
+			VALUES (30, src.[schema_name], parent_id, server_type_id, @batch_id, @create_dt, @is_definition)  
 		WHEN NOT MATCHED BY SOURCE and trg._delete_dt is null AND trg.obj_type_id = 30 and trg.parent_id IN ( select distinct parent_id from #schemas) 
+			and trg.is_definition = @is_definition
 			and @detect_schema_delete=1 THEN  -- exists but not in source --> mark as deleted
 			UPDATE set 
 				_delete_dt = @now --delete
@@ -210,7 +214,7 @@ begin
 				where obj_type_id in ( 10,20) 
 
 		)  src
-		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[schema_id] and trg.obj_type_id in (10,20) and trg.is_definition=0)
+		ON (src.obj_name =  trg.obj_name and src.obj_type_id= trg.obj_type_id and trg.parent_id = src.[schema_id] and trg.obj_type_id in (10,20) and trg.is_definition=@is_definition)
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
@@ -227,13 +231,15 @@ begin
 		AND trg.obj_type_id in (10,20) 
 		and trg.parent_id IN ( select distinct [schema_id] from @obj_tree )  
 		and  ( ( @detect_table_delete=1 and trg.obj_type_id = 10  ) or ( @detect_view_delete=1  and trg.obj_type_id = 20  ) ) 
+		and trg.is_definition = @is_definition
 		THEN  -- exists but not in source --> mark as deleted 
 			UPDATE set
 				_delete_dt = isnull(@now,_delete_dt)  -- delete
 				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
-		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id ) 
+		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null 
+		THEN  -- not exists but not an empty schema.. 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id, is_definition) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id , @is_definition) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -243,11 +249,11 @@ begin
 			END INTO @C
 		;
 
+		-- update obj_id in @obj_tree for later
 		update o
 		set obj_id = s.obj_id
 		from @obj_tree o
-		inner join dbo.obj s on o.obj_name = s.obj_name and s.parent_id = o.schema_id and s.obj_type_id = o.obj_type_id and s.is_definition=0
-
+		inner join dbo.obj s on o.obj_name = s.obj_name and s.parent_id = o.schema_id and s.obj_type_id = o.obj_type_id and s.is_definition=@is_definition
 		-- end tables, views 
 
 		-- begin users
@@ -323,7 +329,7 @@ begin
 			UPDATE child
 			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=0
+			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=@is_definition
 			where parent._delete_dt is not null 
 			and child._delete_dt is null 
 			and child.is_definition=0
@@ -333,7 +339,7 @@ begin
 			UPDATE child
 			set _delete_dt = parent._delete_dt, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 			from dbo.obj child 
-			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=0
+			inner join dbo.obj parent on child.parent_id = parent.obj_id and parent.is_definition=@is_definition
 			where parent._delete_dt is not null 
 			and child._delete_dt is null 
 			and child.is_definition=0
@@ -346,7 +352,7 @@ begin
 			where 
 				o._delete_dt is not null -- parent is deleted
 				and col._delete_dt is null  -- child is not deleted
-				and col.is_definition=0
+				and col.is_definition=@is_definition
 
 			set @rec_cnt_deleted+= isnull(@@ROWCOUNT,0)
 		end
@@ -430,7 +436,7 @@ begin
 		full outer join ( 
 			SELECT  h.column_name, isnull(h._chksum,0) _chksum, h._eff_dt, h.obj_id, h.column_id , h._delete_dt, h.column_type_id
 			FROM  ( select distinct obj_id obj_id from @obj_tree)  tv
-			inner join [dbo].[Col] AS h on h.obj_id = tv.obj_id and h.is_definition=0
+			inner join [dbo].[Col] AS h on h.obj_id = tv.obj_id and h.is_definition=@is_definition
 		/*	WHERE     (_eff_dt =
 						  ( SELECT     MAX(_eff_dt) max_eff_dt
 							FROM       [dbo].[Col] h2
@@ -448,23 +454,23 @@ begin
 
 		-- new records
 		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
-		, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value) 
+		, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value, is_definition) 
 		select obj_id,column_name, _eff_dt, ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale,
 		_chksum, -1
 		, isnull(column_type_id, derived_column_type_id) -- for new columns we take the derived column type if nothing is entered in obj_tree
-		, primary_key_sorting, default_value
+		, primary_key_sorting, default_value, @is_definition
 		from #mutation
 		where mutation = 'NEW'
  
 		insert into dbo.Col ( obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len, numeric_precision,numeric_scale 
-		, _delete_dt, column_id, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value  )
+		, _delete_dt, column_id, _chksum, _batch_id, column_type_id, primary_key_sorting, default_value , is_definition )
 		select obj_id,column_name, _eff_dt,  ordinal_position,is_nullable,data_type,max_len,numeric_precision,numeric_scale
 		, null _delete_dt
 		, column_id
 		, _chksum
 		, -1
 		, isnull(column_type_id , trg_column_type_id)  trg_column_type_id
-		, primary_key_sorting, default_value
+		, primary_key_sorting, default_value, @is_definition
 		from #mutation
 		where mutation in ('CHANGED', 'UNDELETED')
 
