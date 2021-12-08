@@ -80,164 +80,6 @@
 				]
 			},
 			{
-				"name": "ForEachStagingTable",
-				"type": "ForEach",
-				"dependsOn": [
-					{
-						"activity": "Lookup_staging_tables",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"items": {
-						"value": "@activity('Lookup_staging_tables').output.value",
-						"type": "Expression"
-					},
-					"activities": [
-						{
-							"name": "Copy staging table",
-							"type": "Copy",
-							"dependsOn": [
-								{
-									"activity": "drop_table_if_exists",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"sink": {
-									"type": "AzureSqlSink",
-									"tableOption": "autoCreate",
-									"disableMetricsCollection": false
-								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
-							},
-							"inputs": [
-								{
-									"referenceName": "ds_aw",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": "@item().schema_name",
-										"table_name": "@item().table_name"
-									}
-								}
-							],
-							"outputs": [
-								{
-									"referenceName": "ds_staging",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": {
-											"value": "@variables('target_schema_name')",
-											"type": "Expression"
-										},
-										"table_name": {
-											"value": "@concat( item().target_table_name)",
-											"type": "Expression"
-										}
-									}
-								}
-							]
-						},
-						{
-							"name": "drop_table_if_exists",
-							"description": "staging is always dropped and full inserted",
-							"type": "Lookup",
-							"dependsOn": [],
-							"policy": {
-								"timeout": "7.00:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"source": {
-									"type": "AzureSqlSource",
-									"sqlReaderQuery": {
-										"value": "@{concat(\n'IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N''['\n,variables('target_schema_name')\n,'].'\n, item().target_table_name\n, ''') AND type in (N''U'')) DROP TABLE ['\n,variables('target_schema_name')\n,'].['\n, item().target_table_name\n, '] select 1 result '\n)}\n",
-										"type": "Expression"
-									},
-									"queryTimeout": "02:00:00",
-									"partitionOption": "None"
-								},
-								"dataset": {
-									"referenceName": "ds_staging",
-									"type": "DatasetReference",
-									"parameters": {
-										"schema_name": "dbo",
-										"table_name": "dummy"
-									}
-								}
-							}
-						}
-					]
-				}
-			},
-			{
-				"name": "Lookup_staging_tables",
-				"description": "select tables to be transfered into staging layer of the dwh using property include_staging",
-				"type": "Lookup",
-				"dependsOn": [
-					{
-						"activity": "define staging obj tree",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": {
-							"value": "-- include all tables that have the include_staging property set to 1 and \n-- have the source property set to this source system. \n-- also create a target_table_name by prefixing the schema_name\n\nselect \n  obj_id, schema_name, table_name\n  , case when schema_name <> 'dbo' then schema_name +'_' else '' end + table_name target_table_name\nfrom ( \nselect o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \n\nINTERSECT\n\nselect o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'source' and inherited_value = @{variables('source')}'\nand pe.obj_type = 'table' \n) q",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_betl",
-						"type": "DatasetReference"
-					},
-					"firstRowOnly": false
-				}
-			},
-			{
 				"name": "set include_staging property",
 				"description": "Needs to be done only once, but for demo purposes we set this in the PL",
 				"type": "Lookup",
@@ -306,23 +148,28 @@
 						"storedProcedureTableTypeParameterName": "obj_tree_param",
 						"storedProcedureParameters": {
 							"batch_id": {
-								"type": "Int32"
+								"type": "Int32",
+								"value": "0"
 							},
 							"detect_schema_delete": {
-								"type": "Boolean"
+								"type": "Boolean",
+								"value": "false"
 							},
 							"detect_table_delete": {
-								"type": "Boolean"
+								"type": "Boolean",
+								"value": "true"
 							},
 							"detect_user_delete": {
-								"type": "Boolean"
+								"type": "Boolean",
+								"value": "false"
 							},
 							"detect_view_delete": {
-								"type": "Boolean"
+								"type": "Boolean",
+								"value": "false"
 							},
 							"is_definition": {
 								"type": "Boolean",
-								"value": "1"
+								"value": "false"
 							}
 						},
 						"disableMetricsCollection": false
@@ -333,7 +180,7 @@
 						"typeConversion": true,
 						"typeConversionSettings": {
 							"allowDataTruncation": true,
-							"treatBooleanAsNumber": true
+							"treatBooleanAsNumber": false
 						}
 					}
 				},
