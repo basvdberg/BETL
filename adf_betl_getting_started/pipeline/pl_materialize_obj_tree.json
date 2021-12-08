@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Get objects to materialize').output",
+						"value": "@activity('Get objects to materialize').output.value",
 						"type": "Expression"
 					},
 					"activities": [
