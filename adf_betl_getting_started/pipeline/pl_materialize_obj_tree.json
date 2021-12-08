@@ -96,7 +96,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "concat( activity('generate_sql').output.firstRow._output, \n'select 0 result')",
+										"value": "@concat( activity('generate_sql').output.firstRow._output, \n'select 0 result')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
