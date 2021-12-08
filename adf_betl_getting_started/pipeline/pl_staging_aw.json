@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ingest_obj_tree",
+				"name": "observe source obj tree",
 				"type": "Copy",
 				"dependsOn": [],
 				"policy": {
@@ -206,7 +206,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "set include_staging property",
+						"activity": "define staging obj tree",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -243,7 +243,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "ingest_obj_tree",
+						"activity": "observe source obj tree",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -386,6 +386,90 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "define staging obj tree",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "set include_staging property",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "-- definition of staging objects based on source syste, objects\n\nSELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t, null external_obj_id -- this is an object id outside betl for this object. \n      ,1 [is_definition]  -- are we defining new objects ([is_definition] =1) or are we observing existing objects ( [is_definition] =0)\n\t  , server_type_id \n\t  , 'sqls-betl-dev' server_name \n\t  , 'sqldb-rdw' db_name \n      , 'staging_aw' schema_name \n      , case when schema_name <> 'dbo' then schema_name +'_' else '' end + [obj_name] [obj_name]\n\t  ,10 [obj_type_id]  -- table\n      ,c.ordinal_position -- stays the same\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,c.primary_key_sorting\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,'aw' _source\n--select * \nfrom prop_ext pe \ninner join dbo.obj_ext o on pe.obj_id = o.obj_id\ninner join dbo.col c on c.obj_id= o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \nand o._source = 'aw'\n\n",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"sqlWriterStoredProcedureName": "[dbo].[ingest_obj_tree]",
+						"sqlWriterTableType": "ObjTreeTableParam",
+						"storedProcedureTableTypeParameterName": "obj_tree_param",
+						"storedProcedureParameters": {
+							"batch_id": {
+								"type": "Int32"
+							},
+							"detect_schema_delete": {
+								"type": "Boolean"
+							},
+							"detect_table_delete": {
+								"type": "Boolean"
+							},
+							"detect_user_delete": {
+								"type": "Boolean"
+							},
+							"detect_view_delete": {
+								"type": "Boolean"
+							},
+							"is_definition": {
+								"type": "Boolean",
+								"value": "1"
+							}
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_aw",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "dummy"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				]
 			}
 		],
 		"variables": {
