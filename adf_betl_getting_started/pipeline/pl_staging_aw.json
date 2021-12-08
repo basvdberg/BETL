@@ -224,7 +224,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "@select o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \n\nINTERSECT\n\nselect o.obj_id, o.schema_name, o.obj_name table_name\n, case when o.schema_name <> 'dbo' then o.schema_name +'_' else '' end + o.obj_name target_table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'source' and inherited_value = '@{variables('source')}'\nand pe.obj_type = 'table'",
+							"value": "-- include all tables that have the include_staging property set to 1 and \n-- have the source property set to this source system. \n-- also create a target_table_name by prefixing the schema_name\n\nselect \n  obj_id, schema_name, table_name\n  , case when schema_name <> 'dbo' then schema_name +'_' else '' end + table_name target_table_name\nfrom ( \nselect o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \n\nINTERSECT\n\nselect o.obj_id, o.schema_name, o.obj_name table_name\nfrom prop_ext pe \ninner join obj_ext o on pe.obj_id = o.obj_id\nwhere property = 'source' and inherited_value = @{variables('source')}'\nand pe.obj_type = 'table' \n) q",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
