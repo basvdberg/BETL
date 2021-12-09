@@ -1,5 +1,5 @@
 {
-	"name": "pl_staging_aw_etl",
+	"name": "pl_aw_staging_etl",
 	"properties": {
 		"description": "assumption: ddl is done and object tree is up to date",
 		"activities": [

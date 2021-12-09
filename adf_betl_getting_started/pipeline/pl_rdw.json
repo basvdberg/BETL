@@ -45,14 +45,49 @@
 			{
 				"name": "pl_rdw_ddl_his_tables",
 				"type": "ExecutePipeline",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "If environment is dev",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw_ddl_his_tables",
+						"referenceName": "pl_rdw_aw_ddl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "If environment is dev",
+				"description": "only run ddl on dev for performance reasons. On test, acc and prod ddl should not be necessary because ddl changes are done via release mechanism",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(pipeline().globalParameters.Environment, 'dev')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "pl_rdw_aw_ddl",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_rdw_aw_ddl",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
+					]
 				}
 			}
 		],

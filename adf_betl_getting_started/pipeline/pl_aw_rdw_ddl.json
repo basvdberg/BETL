@@ -1,5 +1,5 @@
 {
-	"name": "pl_aw_staging_ddl",
+	"name": "pl_aw_rdw_ddl",
 	"properties": {
 		"activities": [
 			{
