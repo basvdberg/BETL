@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_observe_dwh_obj_tree",
+						"referenceName": "pl_staging_aw_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
