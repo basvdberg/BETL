@@ -1,5 +1,5 @@
 {
-	"name": "pl_generate_sql",
+	"name": "pl_generate_and_exec_sql",
 	"properties": {
 		"activities": [
 			{
@@ -151,6 +151,10 @@
 			"schema_name": {
 				"type": "string",
 				"defaultValue": "staging_aw"
+			},
+			"template_type": {
+				"type": "string",
+				"defaultValue": "ddl"
 			}
 		},
 		"variables": {

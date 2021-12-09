@@ -1,6 +1,7 @@
 {
-	"name": "pl_staging_aw",
+	"name": "pl_refresh_dwh_obj_tree",
 	"properties": {
+		"description": "this will look at the system tables to update the list of objects in your dwh",
 		"activities": [
 			{
 				"name": "observe source obj tree",
