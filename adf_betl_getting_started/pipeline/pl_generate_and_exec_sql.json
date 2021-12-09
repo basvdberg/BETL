@@ -176,7 +176,7 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'@{parameters('schema_name')}' )\n    EXEC('CREATE SCHEMA [@{parameters('schema_name')}]')\n\nselect 'done' result\n",
+									"sqlReaderQuery": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'@{pipeline().parameters.schema_name}' )\n    EXEC('CREATE SCHEMA [@{pipeline().parameters.schema_name}]')\n\nselect 'done' result\n",
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
