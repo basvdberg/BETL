@@ -228,7 +228,7 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "Materialize staging tables DDL",
+						"activity": "observe dwh object tree",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -364,6 +364,26 @@
 							}
 						}
 					]
+				}
+			},
+			{
+				"name": "observe dwh object tree",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Materialize staging tables DDL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_observe_dwh_obj_tree",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
 				}
 			}
 		],
