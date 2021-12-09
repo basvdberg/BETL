@@ -293,7 +293,9 @@
 									"partitionOption": "None"
 								},
 								"sink": {
-									"type": "AzureSqlSink"
+									"type": "AzureSqlSink",
+									"preCopyScript": "truncate table @{item().trg_schema_name}.@{item().trg_table_name}.",
+									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
 								"translator": {
