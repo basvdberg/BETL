@@ -1,5 +1,5 @@
 {
-	"name": "pl_aw_staging_ddl",
+	"name": "pl_aw_ddl_staging",
 	"properties": {
 		"activities": [
 			{
@@ -113,7 +113,7 @@
 				}
 			},
 			{
-				"name": "define staging obj tree",
+				"name": "define staging obects",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -169,7 +169,7 @@
 							},
 							"is_definition": {
 								"type": "Boolean",
-								"value": "false"
+								"value": "true"
 							}
 						},
 						"disableMetricsCollection": false
@@ -202,7 +202,7 @@
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "define staging obj tree",
+						"activity": "define staging obects",
 						"dependencyConditions": [
 							"Succeeded"
 						]
