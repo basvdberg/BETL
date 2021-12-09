@@ -135,7 +135,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t, null external_obj_id -- this is an object id outside betl for this object. \n\t  , server_type_id \n\t  , 'sqls-betl-dev' server_name \n\t  , 'sqldb-rdw' db_name \n      , 'staging_aw' schema_name \n      , case when schema_name <> 'dbo' then schema_name +'_' else '' end + [obj_name] [obj_name]\n\t  ,10 [obj_type_id]  -- table\n      ,c.ordinal_position -- stays the same\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,c.primary_key_sorting\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,'aw' _source\n--select * \nfrom prop_ext pe \ninner join dbo.obj_ext o on pe.obj_id = o.obj_id\ninner join dbo.col c on c.obj_id= o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \nand o._source = 'aw'\n\n",
+							"value": "SELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t, null external_obj_id -- this is an object id outside betl for this object. \n\t  , server_type_id \n\t  , 'sqls-betl-dev' server_name \n\t  , 'sqldb-rdw' db_name \n      , 'staging_aw' schema_name \n      , case when schema_name <> 'dbo' then schema_name +'_' else '' end + [obj_name] [obj_name]\n\t  ,10 [obj_type_id]  -- table\n      ,c.ordinal_position -- stays the same\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,c.primary_key_sorting\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,'aw' _source\n--select * \nfrom prop_ext pe \ninner join dbo.obj_ext o on pe.obj_id = o.obj_id\ninner join dbo.col c on c.obj_id= o.obj_id\nwhere property = 'include_staging' and inherited_value = 1 \nand pe.obj_type = 'table' \nand o._source = '@{variables('source')}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -198,7 +198,7 @@
 				]
 			},
 			{
-				"name": "Materialize staging",
+				"name": "Materialize staging tables DDL",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -211,7 +211,32 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_materialize_obj_tree",
+						"referenceName": "pl_generate_sql",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"source": "aw",
+						"schema_name": "staging_aw"
+					}
+				}
+			},
+			{
+				"name": "Now for the same staging tables ETL",
+				"description": "not that every obj has a source object. this way we can generate etl mappings",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Materialize staging tables DDL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_generate_sql",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true,

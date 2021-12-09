@@ -1,5 +1,5 @@
 {
-	"name": "pl_materialize_obj_tree",
+	"name": "pl_generate_sql",
 	"properties": {
 		"activities": [
 			{
@@ -7,7 +7,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get objects to materialize",
+						"activity": "Get objects",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -116,7 +116,7 @@
 				}
 			},
 			{
-				"name": "Get objects to materialize",
+				"name": "Get objects",
 				"description": "select list of object definitions in object tree ",
 				"type": "Lookup",
 				"dependsOn": [],
@@ -131,7 +131,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "--declare \n--\t@env as varchar(255) = 'dev'\n--\t, @source as varchar(255) = 'aw'\n--\t, @schema_name as varchar(255) = 'staging_aw'\n\ndeclare \n\t@env as varchar(255) = '@{pipeline().globalParameters.Environment}'\n\t, @source as varchar(255) = '@{pipeline().parameters.source}'\n\t, @schema_name as varchar(255) = '@{pipeline().parameters.schema_name}'\n\nselect o.obj_id, o.schema_name, o.obj_name table_name\n, case\n\twhen @env = 'dev' then\n\t\tcase \n\t\t\twhen obj_type = 'table' then 'drop_and_create_table'\n\t\t\twhen obj_type = 'schema' then 'create_schema'\n\t\tend \n\telse -- @env is not dev\n\tcase \n\t\twhen obj_type = 'table' then 'create_table_if_not_exists'\n\tend\n  end template_name \nfrom obj_ext o\nwhere \nis_definition=1 \nand _source = @source\nand schema_name = @schema_name \n\n",
+						"sqlReaderQuery": "declare \n\t@env as varchar(255) = '@{pipeline().globalParameters.Environment}' -- 'dev'\n\t, @template_type as varchar(255) = '@{pipeline().parameters.template_type}' -- 'ddl' -- or ddl\n\t, @source as varchar(255) = '@{pipeline().parameters.source}' -- 'aw'\n\t, @schema_name as varchar(255) = '@{pipeline().parameters.schema_name}' -- 'staging_aw'\n\t, @is_definition as bit = 0 \n\nset @is_definition = case when @template_type='ddl' then 1 else 0 end -- for dll we need object definitions. for etl we need existing objects. \n\n--\t, @schema_name as varchar(255) = \n\nselect o.obj_id, o.schema_name, o.obj_name table_name, coalesce(value, inherited_value, default_value) template_name \n--select * \nfrom prop_ext p\ninner join Obj_ext o on p.obj_id = o.obj_id\nwhere \no.is_definition= @is_definition\nand _source = @source\nand schema_name = @schema_name \nand property = \n case \n\twhen @env = 'dev'  and @template_type ='ddl' then 'ddl_template_dev'\n\twhen @env <> 'dev' and @template_type ='ddl' then 'ddl_template_tap'\n\twhen @template_type ='etl' then 'etl_template'\n  end \n\n\n--select * from static.template\n--select * from obj_ext",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
