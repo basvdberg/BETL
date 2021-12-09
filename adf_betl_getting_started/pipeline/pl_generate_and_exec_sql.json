@@ -119,7 +119,14 @@
 				"name": "Get objects",
 				"description": "select list of object definitions in object tree ",
 				"type": "Lookup",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "If template_type is ddl",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -140,6 +147,50 @@
 						"type": "DatasetReference"
 					},
 					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "If template_type is ddl",
+				"description": "make sure that the schema exists",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(pipeline().parameters.template_type, 'ddl')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "create_schema_if_not_exists",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": "IF NOT EXISTS ( SELECT  *\n                FROM    sys.schemas\n                WHERE   name = N'@{parameters('schema_name')}' )\n    EXEC('CREATE SCHEMA [@{parameters('schema_name')}]')\n\nselect 'done' result\n",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_rdw",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "dbo",
+										"table_name": "Dummy"
+									}
+								}
+							}
+						}
+					]
 				}
 			}
 		],
