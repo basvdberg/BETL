@@ -68,7 +68,7 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"preCopyScript": "truncate table @{item().trg_schema_name}.@{item().trg_table_name}",
+									"preCopyScript": "truncate table @{item().trg_schema_name}.@{item().trg_obj_name}",
 									"disableMetricsCollection": false
 								},
 								"enableStaging": false,
