@@ -289,6 +289,7 @@
     <Build Include="dbo\Stored Procedures\update_staging_meta_data.sql" />
     <Build Include="dbo\Stored Procedures\update_rdw_meta_data.sql" />
     <Build Include="dbo\Views\vw_staging_obj_aw.sql" />
+    <Build Include="dbo\Stored Procedures\drop_all.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />

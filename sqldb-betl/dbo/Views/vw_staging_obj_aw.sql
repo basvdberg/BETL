@@ -1,4 +1,5 @@
-﻿create view vw_staging_obj_aw as 
+﻿
+CREATE view [dbo].[vw_staging_obj_aw] as 
 -- definition of staging objects based on source syste, objects
 
 SELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object
