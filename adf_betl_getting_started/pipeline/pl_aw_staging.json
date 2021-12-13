@@ -1,5 +1,5 @@
 {
-	"name": "pl_staging_aw",
+	"name": "pl_aw_staging",
 	"properties": {
 		"activities": [
 			{
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_staging_aw_etl",
+						"referenceName": "pl_aw_staging_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -41,7 +41,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pl_staging_aw_ddl",
+									"referenceName": "pl_aw_staging_ddl",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true
@@ -64,6 +64,9 @@
 				"type": "String",
 				"defaultValue": "staging-aw"
 			}
+		},
+		"folder": {
+			"name": "aw"
 		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"

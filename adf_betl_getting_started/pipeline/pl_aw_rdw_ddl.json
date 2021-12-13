@@ -1,5 +1,5 @@
 {
-	"name": "pl_aw_ddl_rdw",
+	"name": "pl_aw_rdw_ddl",
 	"properties": {
 		"activities": [
 			{
@@ -237,6 +237,9 @@
 				"type": "String",
 				"defaultValue": "staging-aw"
 			}
+		},
+		"folder": {
+			"name": "aw"
 		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"

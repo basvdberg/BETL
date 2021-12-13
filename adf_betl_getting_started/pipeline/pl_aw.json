@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_staging_aw",
+						"referenceName": "pl_aw_staging",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -36,6 +36,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "aw"
+		},
 		"annotations": []
 	}
 }
