@@ -201,7 +201,7 @@
 			},
 			"schema_name": {
 				"type": "string",
-				"defaultValue": "staging_aw"
+				"defaultValue": "rdw_aw"
 			},
 			"template_type": {
 				"type": "string",
