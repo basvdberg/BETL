@@ -671,6 +671,17 @@ exec [dbo].[ingest_obj_tree] @obj_tree_param
 
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 ',NULL,N'ddl','2021-03-29T21:37:10.250',N'AzureAD\BasvandenBerg')
+ ,(6400,N'create_schema',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+-- exec [dbo].[parse_handlebars] {{obj_id}}, ''{{template_name}}''
+
+IF NOT EXISTS ( SELECT  *
+                FROM    sys.schemas
+                WHERE   name = N''{{obj_name}}'' )
+    EXEC(''CREATE SCHEMA [{{obj_name}}]'')
+
+-- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
+
+',NULL,N'ddl','2021-12-08T18:14:20.923',N'bas@c2h.nl')
 ) AS [Source] ([template_id],[template_name],[template_code],[template_description],[template_type],[_record_dt],[_record_name])
 ON ([Target].[template_id] = [Source].[template_id])
 WHEN MATCHED AND (

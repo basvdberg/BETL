@@ -1,13 +1,11 @@
-﻿--EXEC sp_generate_merge @schema = 'static', @table_name ='Property'
+﻿
+--EXEC sp_generate_merge @schema = 'static', @table_name ='Property'
 SET NOCOUNT ON
 
 MERGE INTO [static].[Property] AS [Target]
 USING (VALUES
   (-1,N'unknown',0,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2019-11-19T18:13:35.830',N'')
  ,(10,N'target_schema_name',0,N'This is used by push for determining where to copy the data to. use this pattern: <db_name>.<schema_name> or <server_name>.<db_name>.<schema_name> if the first is ambiguous',N'db_object',NULL,1,1,1,1,NULL,'2015-08-31T13:18:22.073',N'')
- ,(15,N'template_name_create_table',1,N'which ETL template to use for creating tables (see static.Template) ',N'db_object',NULL,0,0,1,0,NULL,'2017-09-07T09:12:49.160',N'')
- ,(16,N'template_name_create_view',1,N'which ETL template to use for creating views (see static.Template) ',N'db_object',NULL,0,0,1,0,NULL,'2020-05-19T14:33:26.270',N'')
- ,(17,N'template_name_update_table',1,N'which ETL template to use for copying data into tables (see static.Template) ',N'db_object',NULL,0,0,1,0,NULL,'2020-05-19T14:39:51.060',N'')
  ,(20,N'has_synonym_id',0,N'apply syn pattern',N'db_object',NULL,0,0,0,1,NULL,'2015-08-31T13:18:56.070',N'')
  ,(50,N'is_linked_server',0,N'Should a server be accessed like a linked server (e.g. via openquery). Used for SSAS servers.',N'db_object',NULL,NULL,NULL,NULL,NULL,1,'2015-08-31T17:17:37.830',N'')
  ,(60,N'date_datatype_based_on_suffix',0,N'if a column ends with the suffix _date then it''s a date datatype column (instead of e.g. datetime)',N'db_object',N'1',NULL,NULL,NULL,NULL,1,'2015-09-02T13:16:15.733',N'')
@@ -29,6 +27,9 @@ USING (VALUES
  ,(250,N'layer',0,N'dwh layer. e.g. staging, rdw, idw, datamart',N'db_object',NULL,NULL,NULL,1,1,NULL,'2019-12-10T18:09:12.287',N'')
  ,(260,N'source',1,N'short name for e.g. a source database. used as prefix in staging',N'db_object',NULL,1,1,1,1,1,'2020-04-03T10:53:39.070',N'')
  ,(270,N'row_filter',1,N'Use this to filter rows in development env so that everything runs faster',N'db_object',NULL,1,NULL,1,NULL,NULL,'2020-06-17T10:06:20.933',N'')
+ ,(280,N'ddl_template_dev',1,N'what template (from static.template) do we use to generate this object on dev ?',N'db_object',N'drop_and_create_table',1,1,NULL,NULL,NULL,'2021-12-09T09:44:14.293',N'bas@c2h.nl')
+ ,(283,N'ddl_template_tap',1,N'what template (from static.template) do we use to generate this object on test, acceptance and prod?',N'db_object',N'create_table_if_not_exists',1,1,NULL,NULL,NULL,'2021-12-09T09:38:33.350',N'bas@c2h.nl')
+ ,(290,N'etl_template',1,N'what template (from static.template) do we use to fill this object with data ?',N'db_object',NULL,1,NULL,NULL,NULL,NULL,'2021-12-09T09:39:37.817',N'bas@c2h.nl')
 ) AS [Source] ([property_id],[property_name],[enabled],[description],[property_scope],[default_value],[apply_table],[apply_view],[apply_schema],[apply_db],[apply_srv],[record_dt],[record_user])
 ON ([Target].[property_id] = [Source].[property_id])
 WHEN MATCHED AND (
@@ -79,7 +80,3 @@ GO
 
 SET NOCOUNT OFF
 GO
-
-
-
-
