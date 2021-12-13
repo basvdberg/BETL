@@ -15,12 +15,16 @@
     [_batch_id]          INT            NULL,
     [_record_dt]         DATETIME       CONSTRAINT [DF_Obj_h_record_dt] DEFAULT (getdate()) NULL,
     [_record_user]       NVARCHAR (255) CONSTRAINT [DF_Obj_h_record_user] DEFAULT (suser_sname()) NULL,
+    [obj_def_id]         INT            NULL,
+    [source]             VARCHAR (255)  NULL,
     CONSTRAINT [PK_Obj] PRIMARY KEY CLUSTERED ([obj_id] ASC),
     CONSTRAINT [FK_Obj_h_Obj_type] FOREIGN KEY ([obj_type_id]) REFERENCES [static].[Obj_type] ([obj_type_id]),
     CONSTRAINT [FK_Obj_h_Server_type] FOREIGN KEY ([server_type_id]) REFERENCES [static].[Server_type] ([server_type_id]),
     CONSTRAINT [FK_Obj_Obj] FOREIGN KEY ([parent_id]) REFERENCES [dbo].[Obj] ([obj_id]),
     CONSTRAINT [FK_Obj_src_Obj] FOREIGN KEY ([src_obj_id]) REFERENCES [dbo].[Obj] ([obj_id])
 );
+
+
 
 
 
@@ -48,4 +52,12 @@ EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'this is the
 
 GO
 EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'this is the id in the database. e.g. in object_id sys.objects.', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'external_obj_id';
+
+
+GO
+EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'name of source system or ''many'' in case there is more than 1 source system (in this case you need to lookup the sources via the Mapping (TODO) )', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'source';
+
+
+GO
+EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'reference to object that was used as definition for this object ( for generating the ddl)', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'obj_def_id';
 
