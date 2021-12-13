@@ -1,5 +1,5 @@
 {
-	"name": "pl_rdw_aw_etl",
+	"name": "pl_aw_rdw_etl",
 	"properties": {
 		"activities": [
 			{
@@ -144,6 +144,9 @@
 			"obj_tree_sql": {
 				"type": "String"
 			}
+		},
+		"folder": {
+			"name": "aw"
 		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"

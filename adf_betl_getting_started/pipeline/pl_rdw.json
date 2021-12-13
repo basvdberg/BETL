@@ -36,7 +36,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw_etl",
+						"referenceName": "pl_aw_rdw_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -91,6 +91,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "aw"
+		},
 		"annotations": []
 	}
 }
