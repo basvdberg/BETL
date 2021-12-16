@@ -11,12 +11,9 @@ begin
 	delete from dbo.transfer
 	delete from dbo.Property_value
 	delete from dbo.col_h
-	delete from dbo.Col_map_transform
 	delete from dbo.col_map
-	delete from col_def
 	delete from Obj_map_transform
 	delete from dbo.obj_map
-	delete from obj_def
 	delete from dbo.obj
 	truncate table dbo.Cache_user_data
 

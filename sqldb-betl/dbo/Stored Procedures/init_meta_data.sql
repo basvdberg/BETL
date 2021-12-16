@@ -108,19 +108,20 @@ begin
 	-- EXEC sp_generate_merge @schema = 'dbo', @table_name ='Obj'
 	MERGE INTO [dbo].[Obj] AS [Target]
 	USING (VALUES
-	  (-1,N'unknown',-1,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
-	 ,(10,N'localhost',50,NULL,NULL,NULL, dbo.server_type(),NULL,NULL,NULL,NULL,NULL,NULL,Getdate(),suser_sname() )
-	) AS [Source] ([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[external_obj_id],[_create_dt],[_delete_dt],[_batch_id],[_record_dt],[_record_user])
+	  (-1,N'unknown',-1,NULL,0,NULL,NULL,NULL,-1,NULL,NULL,NULL,NULL,NULL,'2021-12-14T11:09:34.143',N'bas@c2h.nl')
+	 ,(10,N'localhost',50,NULL,0,NULL,NULL,NULL,10,NULL,NULL,NULL,NULL,NULL,'2021-12-14T11:09:34.143',N'bas@c2h.nl')
+	) AS [Source] ([obj_id],[obj_name],[obj_type_id],[parent_id],[is_definition],[obj_def_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[external_obj_id],[_create_dt],[_delete_dt],[_batch_id],[_record_dt],[_record_user])
 	ON ([Target].[obj_id] = [Source].[obj_id])
 	WHEN MATCHED AND (
 		NULLIF([Source].[obj_name], [Target].[obj_name]) IS NOT NULL OR NULLIF([Target].[obj_name], [Source].[obj_name]) IS NOT NULL OR 
 		NULLIF([Source].[obj_type_id], [Target].[obj_type_id]) IS NOT NULL OR NULLIF([Target].[obj_type_id], [Source].[obj_type_id]) IS NOT NULL OR 
 		NULLIF([Source].[parent_id], [Target].[parent_id]) IS NOT NULL OR NULLIF([Target].[parent_id], [Source].[parent_id]) IS NOT NULL OR 
+		NULLIF([Source].[is_definition], [Target].[is_definition]) IS NOT NULL OR NULLIF([Target].[is_definition], [Source].[is_definition]) IS NOT NULL OR 
+		NULLIF([Source].[obj_def_id], [Target].[obj_def_id]) IS NOT NULL OR NULLIF([Target].[obj_def_id], [Source].[obj_def_id]) IS NOT NULL OR 
 		NULLIF([Source].[prefix], [Target].[prefix]) IS NOT NULL OR NULLIF([Target].[prefix], [Source].[prefix]) IS NOT NULL OR 
 		NULLIF([Source].[obj_name_no_prefix], [Target].[obj_name_no_prefix]) IS NOT NULL OR NULLIF([Target].[obj_name_no_prefix], [Source].[obj_name_no_prefix]) IS NOT NULL OR 
 		NULLIF([Source].[server_type_id], [Target].[server_type_id]) IS NOT NULL OR NULLIF([Target].[server_type_id], [Source].[server_type_id]) IS NOT NULL OR 
 		NULLIF([Source].[identifier], [Target].[identifier]) IS NOT NULL OR NULLIF([Target].[identifier], [Source].[identifier]) IS NOT NULL OR 
-		NULLIF([Source].[src_obj_id], [Target].[src_obj_id]) IS NOT NULL OR NULLIF([Target].[src_obj_id], [Source].[src_obj_id]) IS NOT NULL OR 
 		NULLIF([Source].[external_obj_id], [Target].[external_obj_id]) IS NOT NULL OR NULLIF([Target].[external_obj_id], [Source].[external_obj_id]) IS NOT NULL OR 
 		NULLIF([Source].[_create_dt], [Target].[_create_dt]) IS NOT NULL OR NULLIF([Target].[_create_dt], [Source].[_create_dt]) IS NOT NULL OR 
 		NULLIF([Source].[_delete_dt], [Target].[_delete_dt]) IS NOT NULL OR NULLIF([Target].[_delete_dt], [Source].[_delete_dt]) IS NOT NULL OR 
@@ -131,11 +132,12 @@ begin
 	  [obj_name] = [Source].[obj_name], 
 	  [obj_type_id] = [Source].[obj_type_id], 
 	  [parent_id] = [Source].[parent_id], 
+	  [is_definition] = [Source].[is_definition], 
+	  [obj_def_id] = [Source].[obj_def_id], 
 	  [prefix] = [Source].[prefix], 
 	  [obj_name_no_prefix] = [Source].[obj_name_no_prefix], 
 	  [server_type_id] = [Source].[server_type_id], 
 	  [identifier] = [Source].[identifier], 
-	  [src_obj_id] = [Source].[src_obj_id], 
 	  [external_obj_id] = [Source].[external_obj_id], 
 	  [_create_dt] = [Source].[_create_dt], 
 	  [_delete_dt] = [Source].[_delete_dt], 
@@ -143,9 +145,9 @@ begin
 	  [_record_dt] = [Source].[_record_dt], 
 	  [_record_user] = [Source].[_record_user]
 	WHEN NOT MATCHED BY TARGET THEN
-	 INSERT([obj_id],[obj_name],[obj_type_id],[parent_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[src_obj_id],[external_obj_id],[_create_dt],[_delete_dt],[_batch_id],[_record_dt],[_record_user])
-	 VALUES([Source].[obj_id],[Source].[obj_name],[Source].[obj_type_id],[Source].[parent_id],[Source].[prefix],[Source].[obj_name_no_prefix],[Source].[server_type_id],[Source].[identifier],[Source].[src_obj_id],[Source].[external_obj_id],[Source].[_create_dt],[Source].[_delete_dt],[Source].[_batch_id],[Source].[_record_dt],[Source].[_record_user])
-	;
+	 INSERT([obj_id],[obj_name],[obj_type_id],[parent_id],[is_definition],[obj_def_id],[prefix],[obj_name_no_prefix],[server_type_id],[identifier],[external_obj_id],[_create_dt],[_delete_dt],[_batch_id],[_record_dt],[_record_user])
+	 VALUES([Source].[obj_id],[Source].[obj_name],[Source].[obj_type_id],[Source].[parent_id],[Source].[is_definition],[Source].[obj_def_id],[Source].[prefix],[Source].[obj_name_no_prefix],[Source].[server_type_id],[Source].[identifier],[Source].[external_obj_id],[Source].[_create_dt],[Source].[_delete_dt],[Source].[_batch_id],[Source].[_record_dt],[Source].[_record_user])
+;
 	-- END dbo.Obj
 
 
