@@ -49,8 +49,13 @@
 							"detect_view_delete": {
 								"type": "Boolean",
 								"value": null
+							},
+							"is_definition": {
+								"type": "Boolean",
+								"value": null
 							}
-						}
+						},
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
 					"translator": {
