@@ -19,7 +19,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "-- get all databases, schemas, tables, views and columns. \nselect * \n\t,  null  _source\nfrom ( \n\nselect \n\tnull src_obj_id\n\t, isnull(o.object_id, db.database_id) external_obj_id \n\t,  case \n\t\twhen SERVERPROPERTY('EngineEdition') < 4 then 15 -- on premise\n\t\twhen SERVERPROPERTY('EngineEdition') >= 5 then 10 -- azure\n\t  end  server_type_id\n\t, @@SERVERNAME server_name \n\t, db.name db_name\n\t, s.name [schema_name]\n\t, o.name as obj_name \n\t, case \n\t\t\twhen o.type = 'U' then 10 \n\t\t\twhen o.type = 'V' then 20 \n\t\t\twhen s.name is not null then 30\n\t\t\twhen db.name is not null then 40 \n\t\t\telse 50 -- server\n\t  end obj_type_id \n\t, c.column_id ordinal_position\n\t, c.name column_name\n\t, case when ic.is_descending_key is not null then 100 else 300 end column_type_id\n\t, convert(int, c.is_nullable) is_nullable\n\t, case when t.is_user_defined=0 then t.name else t2.name end data_type   \n\t, case when t.name in ('nvarchar', 'nchar') then c.max_length /2 else c.max_length end max_len\n\t, case when t.name in ('decimal', 'numeric') then c.precision else cast(null as int) end numeric_precision\n\t, case when t.name in ('decimal', 'numeric') then ODBCSCALE(c.system_type_id, c.scale) else cast(null as int) end numeric_scale\n\t, case when ic.is_descending_key=0 then 'ASC'when ic.is_descending_key=1 then 'DESC'else null end [primary_key_sorting]\n\t, convert(nvarchar(4000),  \n\t  OBJECT_DEFINITION(c.default_object_id))   AS [default_value]\nfrom\n\tsys.databases db\n\tfull outer join sys.schemas s on db.database_id = db_id()\n\tleft join sys.objects o on o.schema_id = s.schema_id\n\tand o.type in ( 'U','V') -- only tables and views\n\tand o.object_id not in \n\t\t(\n\t\tselect major_id \n\t\tfrom sys.extended_properties  \n\t\twhere name = N'microsoft_database_tools_support' \n\t\tand minor_id = 0 and class = 1) -- exclude ssms diagram objects\n\tleft join sys.columns c on c.object_id = o.object_id \n\tleft join sys.types t on c.user_type_id = t.user_type_id \n    left join sys.types t2 on t2.system_type_id = t.system_type_id and t2.is_user_defined = 0 and t.is_user_defined = 1 and t2.name <> 'sysname'\n\t--  = s.name and col.table_name = o.name\n\t--\tleft join sys.columns col on \n\t--col.table_schema = s.name \n\t\t--and col.table_name = o.name \n\t\t--and col.COLUMN_NAME=c.name\n\tleft join sys.indexes i on \n\t\ti.object_id = o.object_id \n\t\tand i.is_primary_key = 1\n\tleft join sys.index_columns ic on \n\t\tic.object_id = o.object_id \n\t\tand ic.column_id = c.column_id\nwhere \n\tisnull(s.name,'') not in ( 'sys', 'INFORMATION_SCHEMA', 'guest') \n\tand isnull(s.name,'') not like 'db[_]%'\n\tand db.name not in ('master','model','msdb','tempdb')\n-- add users\nunion all \n\nselect null src_obj_id\n\t, suser_sid() external_obj_id\n\t,  case \n\t\twhen SERVERPROPERTY('EngineEdition') < 4 then 15 -- on premise\n\t\twhen SERVERPROPERTY('EngineEdition') >= 5 then 10 -- azure\n\t  end  server_type \n\t, @@SERVERNAME server_name \n\t, db_name() db_name\n\t, null [schema_name]\n\t, suser_sname()  obj_name\n\t, 60 obj_type_id -- user\n\t, null ordinal_position\n\t, null column_name\n\t, null column_type_id\n\t, null is_nullable\n\t, null data_type\n\t, null\n\t, null\n\t, null\n\t, null\n\t, null\n\n) q",
+							"value": "declare @_source as sql_variant  = null -- use this var to set the source system identifier. when null the sql tries to get the ext property\n\n-- get all databases, schemas, tables, views and columns. \nselect \n\tisnull(o.object_id, db.database_id) external_obj_id \n\t,  case \n\t\twhen SERVERPROPERTY('EngineEdition') < 4 then 15 -- on premise\n\t\twhen SERVERPROPERTY('EngineEdition') >= 5 then 10 -- azure\n\t  end  server_type_id\n\t, @@SERVERNAME server_name \n\t, db.name db_name\n\t, s.name [schema_name]\n\t, o.name as obj_name \n\t, case \n\t\t\twhen o.type = 'U' then 10 \n\t\t\twhen o.type = 'V' then 20 \n\t\t\twhen s.name is not null then 30\n\t\t\twhen db.name is not null then 40 \n\t\t\telse 50 -- server\n\t  end obj_type_id \n\t, c.column_id ordinal_position\n\t, c.name column_name\n\t, case when ic.is_descending_key is not null then 100 else 300 end column_type_id\n\t, convert(int, c.is_nullable) is_nullable\n\t, case when t.is_user_defined=0 then t.name else t2.name end data_type   \n\t, case when t.name in ('nvarchar', 'nchar') then c.max_length /2 else c.max_length end max_len\n\t, case when t.name in ('decimal', 'numeric') then c.precision else cast(null as int) end numeric_precision\n\t, case when t.name in ('decimal', 'numeric') then ODBCSCALE(c.system_type_id, c.scale) else cast(null as int) end numeric_scale\n\t, case when ic.is_descending_key=0 then 'ASC'when ic.is_descending_key=1 then 'DESC'else null end [primary_key_sorting]\n\t, convert(nvarchar(4000),  \n\t  OBJECT_DEFINITION(c.default_object_id))   AS [default_value]\n\t , isnull(@_source, prop__source.value) _source\n\t , convert(int, prop_src_obj_id.value) src_obj_id\n\t , convert(int, prop_obj_def_id.value) obj_def_id\nfrom\n\tsys.databases db\n\tfull outer join sys.schemas s on db.database_id = db_id()\n\tleft join sys.objects o on o.schema_id = s.schema_id\n\tand o.type in ( 'U','V') -- only tables and views\n\tand o.object_id not in \n\t\t(\n\t\tselect major_id \n\t\tfrom sys.extended_properties  \n\t\twhere name = N'microsoft_database_tools_support' \n\t\tand minor_id = 0 and class = 1) -- exclude ssms diagram objects\n\tleft join sys.extended_properties prop__source on o.object_id    = prop__source.major_id    and prop__source.name = '_source'\n\tleft join sys.extended_properties prop_src_obj_id on o.object_id = prop_src_obj_id.major_id and prop_src_obj_id.name = 'src_obj_id'\n\tleft join sys.extended_properties prop_obj_def_id on o.object_id = prop_obj_def_id.major_id and prop_obj_def_id.name = 'obj_def_id'\n \n\tleft join sys.columns c on c.object_id = o.object_id \n\tleft join sys.types t on c.user_type_id = t.user_type_id \n    left join sys.types t2 on t2.system_type_id = t.system_type_id and t2.is_user_defined = 0 and t.is_user_defined = 1 and t2.name <> 'sysname'\n\t--  = s.name and col.table_name = o.name\n\t--\tleft join sys.columns col on \n\t--col.table_schema = s.name \n\t\t--and col.table_name = o.name \n\t\t--and col.COLUMN_NAME=c.name\n\tleft join sys.indexes i on \n\t\ti.object_id = o.object_id \n\t\tand i.is_primary_key = 1\n\tleft join sys.index_columns ic on \n\t\tic.object_id = o.object_id \n\t\tand ic.column_id = c.column_id\nwhere \n\tisnull(s.name,'') not in ( 'sys', 'INFORMATION_SCHEMA', 'guest') \n\tand isnull(s.name,'') not like 'db[_]%'\n\tand db.name not in ('master','model','msdb','tempdb')\n-- add users\n\nunion all \n\nselect \n\t suser_sid() external_obj_id\n\t,  case \n\t\twhen SERVERPROPERTY('EngineEdition') < 4 then 15 -- on premise\n\t\twhen SERVERPROPERTY('EngineEdition') >= 5 then 10 -- azure\n\t  end  server_type \n\t, @@SERVERNAME server_name \n\t, db_name() db_name\n\t, null [schema_name]\n\t, suser_sname()  obj_name\n\t, 60 obj_type_id -- user\n\t, null ordinal_position\n\t, null column_name\n\t, null column_type_id\n\t, null is_nullable\n\t, null data_type\n\t, null\n\t, null\n\t, null\n\t, null\n\t, null\n\t, null\n\t, null\n\t, null\n\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -50,8 +50,13 @@
 							"detect_view_delete": {
 								"type": "Boolean",
 								"value": null
+							},
+							"is_definition": {
+								"type": "Boolean",
+								"value": null
 							}
-						}
+						},
+						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
 					"translator": {
@@ -81,20 +86,6 @@
 				]
 			}
 		],
-		"variables": {
-			"source": {
-				"type": "String",
-				"defaultValue": "aw"
-			},
-			"db_name": {
-				"type": "String",
-				"defaultValue": "sqldb-aw"
-			},
-			"target_schema_name": {
-				"type": "String",
-				"defaultValue": "staging-aw"
-			}
-		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},
