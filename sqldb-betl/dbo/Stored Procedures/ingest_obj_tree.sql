@@ -9,9 +9,10 @@
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
-FROM vw_staging_obj_aw
+FROM Obj_tree_ms_sql_Server
 select * from @obj_tree_param 
 exec [dbo].[ingest_obj_tree] @obj_tree_param
+select * from Logging
 
 exec clear_meta_data
 
@@ -60,7 +61,7 @@ begin
 
 	-- standard BETL header code... 
 	set nocount on 
-	exec dbo.log_batch @batch_id, 'Header', '?(b?)', @proc_name , @batch_id
+	exec dbo.log_batch @batch_id, 'Header', '?(b?) @is_definition=?', @proc_name , @batch_id, @is_definition
 	-- END standard BETL header code... 
 
 	select @rec_cnt_src = count(*) from @obj_tree_param
