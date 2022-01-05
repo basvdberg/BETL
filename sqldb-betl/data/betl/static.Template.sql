@@ -131,24 +131,21 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 			{{/each}}
 			) 
 		''
+
+{{#if _source}}
+EXEC sys.sp_addextendedproperty @name=N''_source'', @value=N''{{_source}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
+{{#if obj_def_id}}
+EXEC sys.sp_addextendedproperty @name=N''obj_def_id'', @value=N''{{obj_def_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
+{{#if src_obj_id}}
+EXEC sys.sp_addextendedproperty @name=N''src_obj_id'', @value=N''{{src_obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
 -- end drop_and_create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
-
 ',N'drop and create table',N'ddl','2020-04-04T09:03:55.033',N'')
- ,(3210,N'drop_and_create_staging_table',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
-IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
-	DROP TABLE {{schema_name}}.{{obj_name}} 
-
-CREATE TABLE {{schema_name}}.{{obj_name}} (
-	{{#each columns}}
-		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
-	{{/each}}
-	)
-
--- for staging tables we do not create a primary key. 
-
--- end drop_and_create_staging_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
-
-',N'no pkey. because uniqueness is handled in rdw',N'ddl','2020-04-04T09:11:00.517',N'')
  ,(3300,N'drop_and_create_staging_view',N'-- begin drop_and_create_staging_view {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 IF OBJECT_ID(''{{schema_name}}.[{{obj_name}}]'', ''V'') IS NOT NULL
 	DROP VIEW {{schema_name}}.[{{obj_name}}]

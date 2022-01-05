@@ -3,6 +3,9 @@
 
 
 
+
+
+
 -- select * from dbo.obj_ext_all
 -- select * from obj_ext_all where obj_name like '%AzureAD\BasvandenBerg%'
 
@@ -35,11 +38,13 @@ AS
                   o.server_type_id,
                   o.identifier,
                   o.src_obj_id,
+				  o.obj_def_id,
                   o.external_obj_id,
+				  o._source
 				  --,ot.parent_obj_type_id
                   --, dbo.get_prop_obj_id('source', o.obj_id) 
 
-                  pv.value                      _source
+                  --pv.value                      _source
 				  ,				  o.is_definition
 
            FROM   dbo.obj AS o
@@ -54,9 +59,9 @@ AS
                   LEFT OUTER JOIN dbo.obj AS great_grand_parent_o
                                ON grand_parent_o.parent_id =
                                   great_grand_parent_o.obj_id
-                  LEFT JOIN property_value pv
-                         ON pv.property_id = 260
-                            AND pv.obj_id = o.obj_id
+                  --LEFT JOIN property_value pv
+                  --       ON pv.property_id = 260
+                  --          AND pv.obj_id = o.obj_id
           --WHERE        (o._delete_dt IS NULL)
           ),
        q2
@@ -116,6 +121,7 @@ obj_type_id	obj_type	obj_type_level
                   server_type_id,
                   identifier,
                   src_obj_id,
+				  obj_def_id,
                   external_obj_id,
                   _source
 				  ,is_definition
@@ -155,6 +161,8 @@ obj_type_id	obj_type	obj_type_level
          p.default_template_id,
          q2_1.identifier,
          src_obj_id,
+ obj_def_id,
+
          external_obj_id,
          _source
 

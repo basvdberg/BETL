@@ -89,7 +89,6 @@ begin
 		insert into @obj_tree 
 		select distinct
 		  null obj_id
-		  , src.src_obj_id
 		  , src.external_obj_id 
 		  ,src.[server_type_id]
 		  ,src.[server_name]
@@ -112,7 +111,9 @@ begin
 		  ,default_value 
 		  ,get_prefix.prefix
 		  ,case when get_prefix.prefix is not null and len(get_prefix.prefix)>0 then substring(get_prefix.obj_name, len(get_prefix.prefix)+2, len(get_prefix.obj_name) - len(get_prefix.prefix)-1) else get_prefix.obj_name end obj_name_no_prefix
-		  , _source
+		  , src._source
+		  , src.src_obj_id
+		  , src.obj_def_id
 		from @obj_tree_param src --@obj_tree_param src
 		inner join dbo.obj s on src.server_name = s.obj_name and s.obj_type_id=50 and s.server_type_id = src.server_type_id --lookup server
 			and s.is_definition=0
@@ -209,7 +210,7 @@ begin
 		-- begin tables, views and users
 		MERGE into [dbo].[Obj] trg
 		USING (
-				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id
+				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id, obj_def_id, _source
 				from @obj_tree -- where obj_name is not null --> include empty schemas 
 				where obj_type_id in ( 10,20) 
 
@@ -218,12 +219,18 @@ begin
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
-							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1))  -- changed
+							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1)  -- changed
+							or isnull(trg.obj_def_id,-1) <>  isnull(src.obj_def_id,-1)  -- changed
+							or isnull(trg._source,-1) <>  isnull(src._source,-1))  -- changed
+
+
 		THEN -- exists, but marked as deleted  or something changed
 			UPDATE set
 	 			_delete_dt = null -- undelete
 				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  -- undelete
-				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
+				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled 
+				, trg.obj_def_id = isnull(src.obj_def_id , trg.obj_def_id) -- never set to null when filled 
+				, trg._source	 = isnull(src._source    , trg._source) -- never set to null when filled 
 				, trg.external_obj_id = src.external_obj_id
 
 		WHEN NOT MATCHED BY SOURCE 
@@ -238,8 +245,8 @@ begin
 				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null 
 		THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id, is_definition) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id , @is_definition) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id, is_definition, obj_def_id, _source) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id , @is_definition, obj_def_id, _source) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1

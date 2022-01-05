@@ -6,6 +6,7 @@
     [is_definition]      BIT            CONSTRAINT [DF_Obj_is_definition] DEFAULT ((0)) NOT NULL,
     [src_obj_id]         INT            NULL,
     [obj_def_id]         INT            NULL,
+    [_source]            VARCHAR (255)  NULL,
     [prefix]             NVARCHAR (50)  NULL,
     [obj_name_no_prefix] NVARCHAR (255) NULL,
     [server_type_id]     INT            NULL,
@@ -21,6 +22,8 @@
     CONSTRAINT [FK_Obj_h_Server_type] FOREIGN KEY ([server_type_id]) REFERENCES [static].[Server_type] ([server_type_id]),
     CONSTRAINT [FK_Obj_Obj] FOREIGN KEY ([parent_id]) REFERENCES [dbo].[Obj] ([obj_id])
 );
+
+
 
 
 
