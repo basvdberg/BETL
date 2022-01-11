@@ -3,11 +3,24 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "define rdw tables",
+				"name": "observe dwh object tree",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_observe_dwh_obj_tree",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "define rdw obects",
 				"type": "Copy",
 				"dependsOn": [
 					{
-						"activity": "observe staging object tree",
+						"activity": "observe dwh object tree",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -25,7 +38,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "declare @source as varchar(255) = '@{variables('source')}' -- 'aw'\n;\nwith rdw_obj as (  -- define rdw objects based on staging objects\n\tSELECT o.[obj_id] obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t  , server_type_id \n      , [obj_name]\n\tfrom dbo.obj_ext o \n\twhere o.obj_type = 'table' \n\tand o.schema_name = 'staging_'+@source\n\tand o.is_definition = 0\n\tand o._source = @source\n) , rdw_col as ( \n\tselect \n\t\t  o.obj_id\n\t\t  ,c.ordinal_position -- stays the same\n\t\t  ,c.column_name\n\t\t  ,c.column_type_id\n\t\t  ,c.is_nullable\n\t\t  ,c.data_type\n\t\t  ,c.max_len\n\t\t  ,c.numeric_precision\n\t\t  ,c.numeric_scale\n\t\t  ,null [part_of_unique_index]\n\t\t  ,null primary_key_sorting\n\t\t  ,null default_value -- just copy contents. Do not use source system defaults. \n\tfrom rdw_obj o\n\tinner join dbo.col c on c.obj_id= o.obj_id\n) , static_cols as ( \n\tSELECT \n\t\to.obj_id\n\t\t,c.[ordinal_position]\n\t\t,lower(replace(c.[column_name], '{{obj_name}}', o.obj_name)) column_name \n\t\t,c.[column_type_id]\n\t\t,c.[is_nullable]\n\t\t,c.[data_type]\n\t\t,c.[max_len]\n\t\t,null [numeric_precision]\n\t\t,null [numeric_scale]\n\t\t,null [part_of_unique_index]\n\t\t,c.[primary_key_sorting]\n\t\t,c.[default_value]\n\tFROM rdw_obj o\n\tcross join [static].[Column] c \n\twhere c.rdw=1 \n) \nSELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t, null external_obj_id -- this is an object id outside betl for this object. \n\t  , server_type_id \n\t  , 'sqls-betl-dev' server_name \n\t  , 'sqldb-rdw' db_name \n      , 'rdw_'+@source schema_name \n      , obj_name + '_his' obj_name \n\t  , 10 [obj_type_id]  -- table\n      ,ROW_NUMBER() over (partition by o.obj_id order by c.ordinal_position) ordinal_position\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,c.primary_key_sorting\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,@source _source\nfrom rdw_obj o \nleft join ( \n\tselect * from rdw_col\n\tunion all \n\tselect * from static_cols\n) c on c.obj_id = o.obj_id",
+							"value": "with rdw_obj as ( \n\tSELECT \n\t\t null external_obj_id -- this is an object id outside betl for this object. \n\t\t  , server_type_id \n\t\t  , 'sqls-betl-dev' server_name \n\t\t  , 'sqldb-rdw' db_name \n\t\t  , 'rdw' schema_name \n\t\t  , obj_name \n\t\t  ,10 [obj_type_id]  -- table\n\t\t  ,_source\n\t\t , o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t--select * \n\tfrom dbo.obj_ext o\n\twhere \n\tobj_type = 'table'\n\tand db_name = 'sqldb-rdw'\n\tand schema_name = 'staging_aw'\n\tand o._delete_dt is null \n\tand o.is_definition=0\n)\n, rdw_col as ( \nSELECT \n\t o.external_obj_id -- this is an object id outside betl for this object. \n\t  , o.server_type_id \n\t  , o.server_name \n\t  , o.db_name \n      , o.schema_name \n\t  , o.obj_name \n\t  , o.[obj_type_id] \n      ,c.ordinal_position -- stays the same\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,null primary_key_sorting -- redefine prim-key\n      ,c.default_value -- just copy contents. Do not use source system defaults. \n      ,o._source\n\t , o.src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\nfrom rdw_obj o\ninner join dbo.col c on c.obj_id= o.src_obj_id\nwhere \nc._delete_dt is null\nand c.is_definition =0\n) , rdw_obj_2 as ( \nSELECT \n\t o.external_obj_id -- this is an object id outside betl for this object. \n\t  , o.server_type_id \n\t  , o.server_name \n\t  , o.db_name \n      , o.schema_name \n\t  , o.obj_name \n\t  , o.[obj_type_id] \n      ,o.ordinal_position -- stays the same\n      ,o.column_name\n      ,o.column_type_id\n      ,o.is_nullable\n      ,o.data_type\n      ,o.max_len\n      ,o.numeric_precision\n      ,o.numeric_scale\n      ,o.primary_key_sorting\n      ,o.default_value -- just copy contents. Do not use source system defaults. \n      ,o._source\n\t , o.src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\nFROM rdw_col o\nunion all \nselect \n\t o.external_obj_id -- this is an object id outside betl for this object. \n\t  , o.server_type_id \n\t  , o.server_name \n\t  , o.db_name \n      , o.schema_name \n\t  , o.obj_name \n\t  , o.[obj_type_id] \n\t,c.[ordinal_position]\n\t,lower(replace(c.[column_name], '{{obj_name}}', o.obj_name)) column_name \n\t,c.[column_type_id]\n\t,c.[is_nullable]\n\t,c.[data_type]\n\t,c.[max_len]\n\t,null [numeric_precision]\n\t,null [numeric_scale]\n\t,c.[primary_key_sorting]\n\t,c.[default_value]\n      ,o._source\n\t , o.src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\nFROM rdw_obj o\ncross join [static].[Column] c \nwhere c.rdw=1 \n) \nselect \n  external_obj_id -- this is an object id outside betl for this object. \n\t  ,    server_type_id \n\t  ,    server_name \n\t  ,    db_name \n      ,    schema_name \n\t  ,    obj_name \n\t  , [obj_type_id] \n\t  , row_number() over (partition by src_obj_id order by [ordinal_position] asc) [ordinal_position]\n\t,column_name \n\t,[column_type_id]\n\t,[is_nullable]\n\t,[data_type]\n\t,[max_len]\n\t,[numeric_precision]\n\t,[numeric_scale]\n\t,[primary_key_sorting]\n\t,[default_value]\n      ,_source\n\t , src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n       , null obj_def_id\nfrom rdw_obj_2",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -88,11 +101,11 @@
 				]
 			},
 			{
-				"name": "Materialize rdw tables DDL",
+				"name": "Materialize staging tables DDL",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "define rdw tables",
+						"activity": "define rdw obects",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -107,17 +120,17 @@
 					"waitOnCompletion": true,
 					"parameters": {
 						"source": "aw",
-						"schema_name": "rdw_aw",
+						"schema_name": "rdw",
 						"template_type": "ddl"
 					}
 				}
 			},
 			{
-				"name": "observe dwh object tree",
+				"name": "observe dwh object tree2",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "Materialize rdw tables DDL",
+						"activity": "Materialize staging tables DDL",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -131,113 +144,8 @@
 					},
 					"waitOnCompletion": true
 				}
-			},
-			{
-				"name": "observe staging object tree",
-				"type": "ExecutePipeline",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_observe_dwh_obj_tree",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
-				"name": "define rdw tables_copy1",
-				"type": "Copy",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "7.00:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": {
-							"value": "declare @source as varchar(255) = '@{variables('source')}' -- 'aw'\n;\nwith rdw_obj as (  -- define rdw objects based on staging objects\n\tSELECT o.[obj_id] obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t  , server_type_id \n      , [obj_name]\n\tfrom dbo.obj_ext o \n\twhere o.obj_type = 'table' \n\tand o.schema_name = 'staging_'+@source\n\tand o.is_definition = 0\n\tand o._source = @source\n) , rdw_col as ( \n\tselect \n\t\t  o.obj_id\n\t\t  ,c.ordinal_position -- stays the same\n\t\t  ,c.column_name\n\t\t  ,c.column_type_id\n\t\t  ,c.is_nullable\n\t\t  ,c.data_type\n\t\t  ,c.max_len\n\t\t  ,c.numeric_precision\n\t\t  ,c.numeric_scale\n\t\t  ,null [part_of_unique_index]\n\t\t  ,null primary_key_sorting\n\t\t  ,null default_value -- just copy contents. Do not use source system defaults. \n\tfrom rdw_obj o\n\tinner join dbo.col c on c.obj_id= o.obj_id\n) , static_cols as ( \n\tSELECT \n\t\to.obj_id\n\t\t,c.[ordinal_position]\n\t\t,lower(replace(c.[column_name], '{{obj_name}}', o.obj_name)) column_name \n\t\t,c.[column_type_id]\n\t\t,c.[is_nullable]\n\t\t,c.[data_type]\n\t\t,c.[max_len]\n\t\t,null [numeric_precision]\n\t\t,null [numeric_scale]\n\t\t,null [part_of_unique_index]\n\t\t,c.[primary_key_sorting]\n\t\t,c.[default_value]\n\tFROM rdw_obj o\n\tcross join [static].[Column] c \n\twhere c.rdw=1 \n) \nSELECT o.[obj_id] src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n\t, null external_obj_id -- this is an object id outside betl for this object. \n\t  , server_type_id \n\t  , 'sqls-betl-dev' server_name \n\t  , 'sqldb-rdw' db_name \n      , 'rdw_'+@source schema_name \n      , obj_name + '_his' obj_name \n\t  , 10 [obj_type_id]  -- table\n      ,ROW_NUMBER() over (partition by o.obj_id order by c.ordinal_position) ordinal_position\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      ,c.primary_key_sorting\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,@source _source\nfrom rdw_obj o \nleft join ( \n\tselect * from rdw_col\n\tunion all \n\tselect * from static_cols\n) c on c.obj_id = o.obj_id",
-							"type": "Expression"
-						},
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"sink": {
-						"type": "AzureSqlSink",
-						"sqlWriterStoredProcedureName": "[dbo].[ingest_obj_tree]",
-						"sqlWriterTableType": "ObjTreeTableParam",
-						"storedProcedureTableTypeParameterName": "obj_tree_param",
-						"storedProcedureParameters": {
-							"batch_id": {
-								"type": "Int32",
-								"value": "0"
-							},
-							"detect_schema_delete": {
-								"type": "Boolean",
-								"value": "false"
-							},
-							"detect_table_delete": {
-								"type": "Boolean",
-								"value": "true"
-							},
-							"detect_user_delete": {
-								"type": "Boolean",
-								"value": "false"
-							},
-							"detect_view_delete": {
-								"type": "Boolean",
-								"value": "false"
-							},
-							"is_definition": {
-								"type": "Boolean",
-								"value": "true"
-							}
-						},
-						"disableMetricsCollection": false
-					},
-					"enableStaging": false,
-					"translator": {
-						"type": "TabularTranslator",
-						"typeConversion": true,
-						"typeConversionSettings": {
-							"allowDataTruncation": true,
-							"treatBooleanAsNumber": true
-						}
-					}
-				},
-				"inputs": [
-					{
-						"referenceName": "ds_betl",
-						"type": "DatasetReference"
-					}
-				],
-				"outputs": [
-					{
-						"referenceName": "ds_betl",
-						"type": "DatasetReference"
-					}
-				]
 			}
 		],
-		"variables": {
-			"source": {
-				"type": "String",
-				"defaultValue": "aw"
-			},
-			"db_name": {
-				"type": "String",
-				"defaultValue": "sqldb-aw"
-			},
-			"target_schema_name": {
-				"type": "String",
-				"defaultValue": "staging-aw"
-			}
-		},
 		"folder": {
 			"name": "aw"
 		},

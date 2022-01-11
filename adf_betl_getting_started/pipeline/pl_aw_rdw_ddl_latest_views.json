@@ -1,5 +1,5 @@
 {
-	"name": "pl_rdw_aw_ddl_latest_views",
+	"name": "pl_aw_rdw_ddl_latest_views",
 	"properties": {
 		"activities": [
 			{
@@ -289,6 +289,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "aw"
+		},
 		"annotations": [],
 		"lastPublishTime": "2021-07-07T15:48:49Z"
 	},

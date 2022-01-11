@@ -35,7 +35,7 @@
 					},
 					"ifTrueActivities": [
 						{
-							"name": "pl_staging_aw_ddl",
+							"name": "pl_aw_staging_ddl",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
