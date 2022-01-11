@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw_ddl_latest_views",
+						"referenceName": "pl_aw_rdw_ddl_latest_views",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -56,7 +56,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw_aw_ddl",
+						"referenceName": "pl_aw_rdw_ddl2",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -81,7 +81,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pl_rdw_aw_ddl",
+									"referenceName": "pl_aw_rdw_ddl2",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true
