@@ -29,7 +29,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw",
+						"referenceName": "pl_aw_rdw",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
