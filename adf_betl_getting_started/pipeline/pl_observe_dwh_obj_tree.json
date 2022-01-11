@@ -53,7 +53,7 @@
 							},
 							"is_definition": {
 								"type": "Boolean",
-								"value": ""
+								"value": "false"
 							}
 						},
 						"disableMetricsCollection": false
