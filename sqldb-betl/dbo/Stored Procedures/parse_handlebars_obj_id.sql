@@ -83,6 +83,7 @@ begin
 
 				-- standard BETL header code... 
 	set nocount on 
+	begin try
 	exec dbo.log @batch_id, 'HEADER', '? obj_id=?, @template_name=?, batch_id=?,@output_result=?', @proc_name , @obj_id, @template_name, @batch_id,@output_result 
 	-- END standard BETL header code... 
 
@@ -474,6 +475,10 @@ begin
 	exec dbo.log @batch_id, 'FOOTER', '?(t?)', @proc_name , @batch_id
 	-- END standard BETL footer code... 
 
+	end try 
+	begin catch
+		exec dbo.catch_error @batch_id, @proc_name 
+	end catch
 
 
 end

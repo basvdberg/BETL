@@ -94,8 +94,8 @@ begin
 		declare @msg2 as varchar(255) =ERROR_MESSAGE() 
 				, @sev as int = ERROR_SEVERITY()
 				, @number as int = ERROR_NUMBER() 
---		IF @@TRANCOUNT > 0                ROLLBACK TRANSACTION
-		exec dbo.log_error 0, @msg=@msg2,  @severity=@sev, @number=@number , @procedure=@proc_name, @batch_id = @parent_batch_id 
+		IF @@TRANCOUNT > 0                ROLLBACK TRANSACTION
+			exec dbo.log_error @batch_id = @parent_batch_id , @msg=@msg2,  @severity=@sev, @number=@number , @procedure=@proc_name
 	end catch 
 	
 	if not isnull(@batch_id, -1) > 0 

@@ -243,7 +243,6 @@
     <Build Include="Security\util.sql" />
     <Build Include="dbo\Views\Obj_ext_unpivot.sql" />
     <Build Include="dbo\Tables\Col_h.sql" />
-    <Build Include="dbo\Stored Procedures\update_object_tree.sql" />
     <Build Include="dbo\Sequences\seq_Obj.sql" />
     <Build Include="dbo\Views\Monitor.sql" />
     <Build Include="dbo\Views\Logging_ext.sql" />
@@ -281,12 +280,9 @@
     <Build Include="dbo\Functions\server_type.sql" />
     <Build Include="dbo\Stored Procedures\ingest_current_db.sql" />
     <Build Include="dbo\Stored Procedures\parse_handlebars_obj_id.sql" />
-    <Build Include="dbo\Stored Procedures\update_rdw_latest_view_def.sql" />
-    <Build Include="dbo\Stored Procedures\update_rdw_his_table_def.sql" />
-    <Build Include="dbo\Stored Procedures\update_staging_meta_data.sql" />
-    <Build Include="dbo\Stored Procedures\update_rdw_meta_data.sql" />
     <Build Include="dbo\Stored Procedures\drop_all.sql" />
     <None Include="data\betl\static.Join_type.sql" />
+    <Build Include="dbo\Stored Procedures\catch_error.sql" />
   </ItemGroup>
   <ItemGroup>
     <PreDeploy Include="data\PreDeployment.sql" />

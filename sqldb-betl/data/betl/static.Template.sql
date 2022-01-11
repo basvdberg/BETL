@@ -4,6 +4,85 @@ SET NOCOUNT ON
 MERGE INTO [static].[Template] AS [Target]
 USING (VALUES
   (-1,N'unknown',NULL,NULL,N'ddl','2019-11-19T18:14:22.970',N'')
+ ,(500,N'drop_and_create_table',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
+IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
+	DROP TABLE {{schema_name}}.{{obj_name}} 
+
+CREATE TABLE {{schema_name}}.{{obj_name}} (
+	{{#each columns}}
+		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{#if column_type_id in (200)}}IDENTITY{{/if}}{{default_value}}{{#unless @last}},{{/unless}}
+	{{/each}}
+	)
+
+
+if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0 
+	exec sp_executesql N''
+		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''''PK_{{schema_name}}_{{obj_name}}_{{obj_id}}'''')
+		ALTER TABLE {{schema_name}}.{{obj_name}} ADD CONSTRAINT
+			PK_{{schema_name}}_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
+			(
+			{{#each columns}}
+				{{#if primary_key_sorting}}
+					[{{column_name}}] {{primary_key_sorting}}
+					{{#unless @last}},{{/unless}}
+				{{/if}}
+			{{/each}}
+			) 
+		''
+
+{{#if _source}}
+EXEC sys.sp_addextendedproperty @name=N''_source'', @value=N''{{_source}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
+{{#if obj_id}}
+EXEC sys.sp_addextendedproperty @name=N''obj_def_id'', @value=N''{{obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
+{{#if src_obj_id}}
+EXEC sys.sp_addextendedproperty @name=N''src_obj_id'', @value=N''{{src_obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{/if}}
+
+-- end drop_and_create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
+',N'drop and create table',N'ddl','2020-04-04T09:03:55.033',N'')
+ ,(505,N'create_table_if_not_exists',N'-- begin create_table_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}]
+IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NULL 
+BEGIN
+	CREATE TABLE {{schema_name}}.{{obj_name}} (
+	{{#each columns}}
+		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
+	{{/each}}
+	)
+
+
+	if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0 
+	exec sp_executesql N''
+		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''''PK_{{schema_name}}_{{obj_name}}_{{obj_id}}'''')
+		ALTER TABLE {{schema_name}}.{{obj_name}} ADD CONSTRAINT
+			PK_{{schema_name}}_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
+			(
+			{{#each columns}}
+				{{#if primary_key_sorting}}
+					[{{column_name}}] {{primary_key_sorting}}
+					{{#unless @last}},{{/unless}}
+				{{/if}}
+			{{/each}}
+			) 
+		''
+
+	{{#if _source}}
+	EXEC sys.sp_addextendedproperty @name=N''_source'', @value=N''{{_source}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+	{{/if}}
+
+	{{#if obj_id}}
+	EXEC sys.sp_addextendedproperty @name=N''obj_def_id'', @value=N''{{obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+	{{/if}}
+
+	{{#if src_obj_id}}
+	EXEC sys.sp_addextendedproperty @name=N''src_obj_id'', @value=N''{{src_obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+	{{/if}}
+END
+-- end create_table_if_not_exists  {{schema_name}}.{{obj_name}}[{{obj_id}}]
+',N'create table ddl',N'ddl','2020-04-03T12:24:28.643',N'')
  ,(1000,N'staging_create_view_h',N'-- begin staging_create_view_h {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}_h'', ''V'') IS NULL
 exec sp_executesql N''
@@ -67,32 +146,6 @@ and h._eff_dt = (
 	) 
 ''
 -- end {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}] ',NULL,N'ddl','2020-07-01T11:01:30.497',N'')
- ,(3000,N'create_table_if_not_exists',N'-- begin create_table_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}]
-IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NULL 
-	CREATE TABLE {{schema_name}}.{{obj_name}} (
-	{{#each columns}}
-		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
-	{{/each}}
-	)
-
-
-if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0 
-	exec sp_executesql N''
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''''PK_{{schema_name}}_{{obj_name}}_{{obj_id}}'''')
-		ALTER TABLE {{schema_name}}.{{obj_name}} ADD CONSTRAINT
-			PK_{{schema_name}}_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
-			(
-			{{#each columns}}
-				{{#if primary_key_sorting}}
-					[{{column_name}}] {{primary_key_sorting}}
-					{{#unless @last}},{{/unless}}
-				{{/if}}
-			{{/each}}
-			) 
-		''
--- end create_table_if_not_exists  {{schema_name}}.{{obj_name}}[{{obj_id}}]
-
-',N'create table ddl',N'ddl','2020-04-03T12:24:28.643',N'')
  ,(3100,N'create_staging_view_if_not_exists',N'-- begin create_view_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''V'') IS NULL
 exec sp_executesql N''
@@ -106,7 +159,7 @@ FROM {{src_schema_name}}.[{{src_obj_name}}]
 ''
 -- end create_view_if_not_exists {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 ',N'create view ddl',N'ddl','2020-04-03T17:35:35.340',N'')
- ,(3200,N'drop_and_create_table',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
+ ,(3300,N'drop_and_create_staging_view',N'-- begin drop_and_create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
 IF OBJECT_ID(''{{schema_name}}.{{obj_name}}'', ''U'') IS NOT NULL 
 	DROP TABLE {{schema_name}}.{{obj_name}} 
 
@@ -136,8 +189,8 @@ if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0
 EXEC sys.sp_addextendedproperty @name=N''_source'', @value=N''{{_source}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
 {{/if}}
 
-{{#if obj_def_id}}
-EXEC sys.sp_addextendedproperty @name=N''obj_def_id'', @value=N''{{obj_def_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
+{{#if obj_id}}
+EXEC sys.sp_addextendedproperty @name=N''obj_def_id'', @value=N''{{obj_id}}'' , @level0type=N''SCHEMA'',@level0name=N''{{schema_name}}'', @level1type=N''TABLE'',@level1name=N''{{obj_name}}''
 {{/if}}
 
 {{#if src_obj_id}}
@@ -145,47 +198,7 @@ EXEC sys.sp_addextendedproperty @name=N''src_obj_id'', @value=N''{{src_obj_id}}'
 {{/if}}
 
 -- end drop_and_create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
-',N'drop and create table',N'ddl','2020-04-04T09:03:55.033',N'')
- ,(3300,N'drop_and_create_staging_view',N'-- begin drop_and_create_staging_view {{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
-IF OBJECT_ID(''{{schema_name}}.[{{obj_name}}]'', ''V'') IS NOT NULL
-	DROP VIEW {{schema_name}}.[{{obj_name}}]
-
-exec sp_executesql N''
-CREATE VIEW {{schema_name}}.[{{obj_name}}] AS
-SELECT
-{{#each columns}}
-	[{{column_name}}] as [{{column_name}}]
-	{{#unless @last}},{{/unless}}
-{{/each}}
-FROM {{src_schema_name}}.[{{src_obj_name}}]
-''
--- end drop_and_create_staging_view{{schema_name}}.{{obj_name}}[{{obj_id}}] {{src_obj_id}}
 ',NULL,N'ddl','2020-04-04T20:44:12.237',N'')
- ,(3400,N'create_table',N'-- begin create_table {{schema_name}}.{{obj_name}}[{{obj_id}}]
-CREATE TABLE {{schema_name}}.{{obj_name}} (
-	{{#each columns}}
-		[{{column_name}}] {{data_type}}{{data_size}} {{is_nullable}} {{default_value}}{{#unless @last}},{{/unless}}
-	{{/each}}
-	)
-
-
-if len(''{{#each columns}}{{#if primary_key_sorting}}*{{/if}}{{/each}}'') > 0 
-	exec sp_executesql N''
-		IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = N''''PK_{{schema_name}}_{{obj_name}}_{{obj_id}}'''')
-		ALTER TABLE {{schema_name}}.{{obj_name}} ADD CONSTRAINT
-			PK_{{schema_name}}_{{obj_name}}_{{obj_id}} PRIMARY KEY CLUSTERED 
-			(
-			{{#each columns}}
-				{{#if primary_key_sorting}}
-					[{{column_name}}] {{primary_key_sorting}}
-					{{#unless @last}},{{/unless}}
-				{{/if}}
-			{{/each}}
-			) 
-		''
--- end create_table{{schema_name}}.{{obj_name}}[{{obj_id}}]
-
-',NULL,N'ddl','2020-04-15T12:53:01.730',N'')
  ,(4000,N'rdw_insert',N'-- begin {{template_name}} {{schema_name}}.{{obj_name}}[{{obj_id}}]  
 -- exec [dbo].[parse_handlebars] {{obj_id}}, ''''{{template_name}}''''
 -- obj_id is historic rdw table ( we need access to src and trg)
@@ -717,3 +730,4 @@ GO
 
 SET NOCOUNT OFF
 GO
+

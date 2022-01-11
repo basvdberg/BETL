@@ -132,7 +132,7 @@ BEGIN
 	-- END CUSTOM_CODE
 	if @log_type = 'ERROR'
 	begin
-		exec dbo.log_error @batch_id, @msg, 15, @batch_id
+		exec dbo.log_error @batch_id=@batch_id, @msg=@msg, @severity=15
 		--SET @short_msg = substring(@msg, 0, 255) 
 		--RAISERROR( @short_msg ,15,1) WITH SETERROR
 	end 
@@ -144,8 +144,18 @@ BEGIN
 		if @batch_id=0 
 			print '--ERROR batch_id should not be 0. Use -1 for unknown batch_id !'
 
-		insert into dbo.Logging
+		--IF OBJECT_ID('tempdb..#Logging') IS NULL
+		--	select getdate() log_dt, @msg msg, @batch_id batch_id, @log_level_id log_level_id, @log_type_id log_type_id, @exec_sql exec_sql
+		--	into #Logging
+		--ELSE
+		--	insert 
+		--	into #Logging ( log_dt, msg,batch_id,log_level_id, log_type_id, exec_sql) 
+		--	values ( getdate(), @msg, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
+
+		insert into dbo.Logging ( log_dt, msg,batch_id,log_level_id, log_type_id, exec_sql) 
 		values( getdate(), @msg, @batch_id, @log_level_id, @log_type_id, @exec_sql) 
+
+
 	end 
 
     footer:

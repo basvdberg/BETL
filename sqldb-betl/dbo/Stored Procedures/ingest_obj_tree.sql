@@ -35,7 +35,6 @@ as
 begin 
 	 --declare @batch_id as int = -1 , @obj_tree_param ObjTreeTableParam 
 	 --insert into @obj_tree_param select * from dbo.Obj_tree_Staging
-	
 	set nocount on 
 	declare @debug as bit = 0 -- set to 1 to print debug info
 	--, @batch_id as int = -1 
@@ -69,7 +68,7 @@ begin
 
 	DECLARE @C TABLE (act tinyint) -- act 1= insert , 2 = update, 3= delete , 4= undelete
 	exec dbo.start_transfer @batch_id = @batch_id output, @transfer_id=@transfer_id output, @transfer_name= @proc_name, @result_set = 0 
-	--begin try 
+	begin try 
 	--begin transaction 
 		-- begin servers 
 		IF OBJECT_ID('tempdb..#servers') IS NOT NULL
@@ -204,7 +203,7 @@ begin
 		update o
 		set schema_id = s.obj_id
 		from @obj_tree o
-		inner join dbo.obj s on o.schema_name = s.obj_name and s.parent_id = o.db_id and s.obj_type_id=30
+		inner join dbo.obj s on o.schema_name = s.obj_name and s.parent_id = o.db_id and s.obj_type_id=30 and is_definition = @is_definition
 		-- end schemas
 		
 
@@ -542,4 +541,8 @@ begin
 	exec dbo.log_batch @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
 	-- standard BETL footer code... 
 
+	end try 
+	begin catch
+		exec dbo.catch_error @batch_id, @proc_name 
+	end catch
 end

@@ -10,6 +10,7 @@ begin
 	-- BEGIN standard BETL header code
 	declare @proc_name as sysname =  object_name(@@PROCID)
 	set nocount on 
+	begin try 
 	exec dbo.log @batch_id, 'HEADER', '? @full_obj_name=?, @batch_id=?', @proc_name , @full_obj_name, @batch_id
 	-- END standard BETL header code
 
@@ -36,4 +37,10 @@ begin
 	-- BEGIN standard BETL footer code
 	exec dbo.log @batch_id, 'FOOTER', '?(t?)', @proc_name , @batch_id
 	-- END standard BETL footer code
+
+	end try 
+	begin catch
+		exec dbo.catch_error @batch_id, @proc_name 
+	end catch
+
 end
