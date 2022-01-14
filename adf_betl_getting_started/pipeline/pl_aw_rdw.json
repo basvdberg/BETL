@@ -41,7 +41,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pl_aw_rdw_ddl",
+									"referenceName": "pl_aw_rdw_ddl_tables",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true
