@@ -1,0 +1,32 @@
+{
+	"name": "pl_aw_rdw_etl2",
+	"properties": {
+		"activities": [
+			{
+				"name": "Exec RDW ETL",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_generate_and_exec_sql",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"source": "aw",
+						"schema_name": "rdw",
+						"template_type": "etl",
+						"obj_type": "table"
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "aw"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-07-07T15:48:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
