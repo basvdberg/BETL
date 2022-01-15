@@ -3,26 +3,6 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "pl_aw_rdw_etl",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "If environment is dev",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_aw_rdw_etl",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true
-				}
-			},
-			{
 				"name": "If environment is dev",
 				"description": "only run ddl on dev for performance reasons. On test, acc and prod ddl should not be necessary because ddl changes are done via release mechanism",
 				"type": "IfCondition",
@@ -35,7 +15,7 @@
 					},
 					"ifTrueActivities": [
 						{
-							"name": "pl_aw_rdw_ddl",
+							"name": "pl_aw_rdw_ddl_tables",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"userProperties": [],
@@ -46,8 +26,54 @@
 								},
 								"waitOnCompletion": true
 							}
+						},
+						{
+							"name": "pl_aw_rdw_ddl_views",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "pl_aw_rdw_ddl_tables",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_aw_rdw_ddl_tables",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
 						}
 					]
+				}
+			},
+			{
+				"name": "Exec RDW ETL",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "If environment is dev",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_generate_and_exec_sql",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"source": "aw",
+						"schema_name": "rdw",
+						"template_type": "etl",
+						"obj_type": "table"
+					}
 				}
 			}
 		],
