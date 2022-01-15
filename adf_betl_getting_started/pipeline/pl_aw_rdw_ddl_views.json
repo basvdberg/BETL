@@ -121,7 +121,8 @@
 					"parameters": {
 						"source": "aw",
 						"schema_name": "rdw",
-						"template_type": "ddl"
+						"template_type": "ddl",
+						"obj_type": "view"
 					}
 				}
 			},
