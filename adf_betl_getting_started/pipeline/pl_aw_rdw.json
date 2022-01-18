@@ -51,7 +51,7 @@
 				}
 			},
 			{
-				"name": "Exec RDW ETL",
+				"name": "pl_aw_rdw",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{

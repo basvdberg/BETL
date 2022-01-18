@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "pl_staging_aw_etl",
+				"name": "pl_aw_staging_etl",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
