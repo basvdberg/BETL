@@ -226,7 +226,8 @@
 					"parameters": {
 						"source": "aw",
 						"schema_name": "staging_aw",
-						"template_type": "ddl"
+						"template_type": "ddl",
+						"obj_type": "table"
 					}
 				}
 			},
