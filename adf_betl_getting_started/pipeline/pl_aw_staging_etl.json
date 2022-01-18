@@ -19,7 +19,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "-- this is the mapping for the staging layer\nselect \nsrc.obj_id src_obj_id, src.schema_name src_schema_name , src.obj_name src_obj_name \n,\no.obj_id trg_obj_id, o.schema_name trg_schema_name , o.obj_name trg_obj_name \nfrom obj_ext o\ninner join obj_ext src on o.src_obj_id = src.obj_id\nwhere \no.is_definition=0\nand o.obj_type = 'table'\nand o.db_name = 'sqldb-rdw'\n--and o.schema_name = 'staging_aw'\nand o.schema_name = 'staging_@{variables('source')}'\n",
+						"sqlReaderQuery": {
+							"value": "-- this is the mapping for the staging layer\nselect \nsrc.obj_id src_obj_id, src.schema_name src_schema_name , src.obj_name src_obj_name \n,\no.obj_id trg_obj_id, o.schema_name trg_schema_name , o.obj_name trg_obj_name \nfrom obj_ext o\ninner join obj_ext src on o.src_obj_id = src.obj_id\nwhere \no.is_definition=0\nand o.obj_type = 'table'\nand o.db_name = 'sqldb-rdw'\n--and o.schema_name = 'staging_aw'\nand o.schema_name = 'staging_@{variables('source')}'\n",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -68,7 +71,10 @@
 								},
 								"sink": {
 									"type": "AzureSqlSink",
-									"preCopyScript": "truncate table @{item().trg_schema_name}.@{item().trg_obj_name}",
+									"preCopyScript": {
+										"value": "truncate table @{item().trg_schema_name}.@{item().trg_obj_name}",
+										"type": "Expression"
+									},
 									"disableMetricsCollection": false
 								},
 								"enableStaging": false,

@@ -1,5 +1,5 @@
 {
-	"name": "pl_observe_dwh_obj_tree",
+	"name": "pl_observe_dwh",
 	"properties": {
 		"description": "this will look at the system tables to update the list of objects in your dwh",
 		"activities": [

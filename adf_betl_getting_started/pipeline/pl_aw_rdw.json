@@ -41,7 +41,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "pl_aw_rdw_ddl_tables",
+									"referenceName": "pl_aw_rdw_ddl_views",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true
@@ -51,7 +51,7 @@
 				}
 			},
 			{
-				"name": "Exec RDW ETL",
+				"name": "pl_aw_rdw",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
@@ -64,7 +64,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_aw_rdw_etl2",
+						"referenceName": "pl_aw_rdw_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true

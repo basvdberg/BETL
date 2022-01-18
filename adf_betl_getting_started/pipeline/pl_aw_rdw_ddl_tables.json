@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_observe_dwh_obj_tree",
+						"referenceName": "pl_observe_dwh",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -90,13 +90,21 @@
 				"inputs": [
 					{
 						"referenceName": "ds_betl",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "Dummy"
+						}
 					}
 				],
 				"outputs": [
 					{
 						"referenceName": "ds_betl",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "Dummy"
+						}
 					}
 				]
 			},
@@ -140,7 +148,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_observe_dwh_obj_tree",
+						"referenceName": "pl_observe_dwh",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true

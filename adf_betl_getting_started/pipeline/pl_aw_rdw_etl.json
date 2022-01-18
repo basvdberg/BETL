@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Exec RDW ETL",
+				"name": "pl_generate_and_exec_sql",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"userProperties": [],
