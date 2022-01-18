@@ -211,7 +211,7 @@
 			},
 			"template_type": {
 				"type": "string",
-				"defaultValue": "ddl"
+				"defaultValue": "etl"
 			},
 			"obj_type": {
 				"type": "string",
