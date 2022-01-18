@@ -145,7 +145,7 @@ begin
 		goto footer
 	end
 
-	exec log @batch_id, 'INFO', 'begin generating abstract syntax tree '
+	exec log @batch_id, 'STEP', 'begin generating abstract syntax tree '
 	-- BEGIN parse the handle bars expressions into an abstract syntax tree ( ast) 
 	if object_id('tempdb..#ast') is not null 
 		drop table #ast
@@ -282,7 +282,7 @@ begin
 	set @node = @parent.GetDescendant(@node, NULL)
 	
 	insert into #ast(node,s, type)  values ( @node,  @value,  'const') 
-	exec log @batch_id, 'INFO', 'done generating abstract syntax tree '
+	exec log @batch_id, 'STEP', 'done generating abstract syntax tree '
 
 	-- END parse the handle bars expressions into an abstract syntax tree ( ast) 
 	

@@ -60,7 +60,7 @@ begin
 
 	-- standard BETL header code... 
 	set nocount on 
-	exec dbo.log_batch @batch_id, 'Header', '?(b?) @is_definition=?', @proc_name , @batch_id, @is_definition
+	exec dbo.log_batch @batch_id, 'Header', '?(b?) @is_definition=?, @detect_table_delete=?, @detect_view_delete=?, @detect_schema_delete=?, @detect_user_delete=0', @proc_name , @batch_id, @is_definition, @detect_table_delete, @detect_view_delete, @detect_schema_delete, @detect_user_delete
 	-- END standard BETL header code... 
 
 	select @rec_cnt_src = count(*) from @obj_tree_param
@@ -168,7 +168,7 @@ begin
 		IF OBJECT_ID('tempdb..#schemas') IS NOT NULL
 			DROP TABLE #schemas
 		
-		select distinct src.schema_name, db_id parent_id, server_type_id , _source
+		select distinct src.schema_name, db_id parent_id, server_type_id 
 		into #schemas
 		from @obj_tree src
 		where src.schema_name is not null 
@@ -401,6 +401,7 @@ begin
 				, src.[default_value]
 				, calc_cols.* 
 				, case 
+					when col_def.column_type_id is not null then col_def.column_type_id  -- take column type from definition if present. 
 					when left_side = src.obj_name -- column name starts with object name 
 						and filtered_right_side  in ( 'key', 'id', 'number', 'nr') then 100 
 					when left_side = src.obj_name_no_prefix -- column name starts with object name 
@@ -413,6 +414,7 @@ begin
 				, src.obj_id 
 			from @obj_tree src
 			left join static.[Column] static_col on static_col.column_name = src.column_name 
+			left join dbo.Col col_def on src.obj_def_id = col_def.obj_id and src.column_name = col_def.column_name and Col_def._delete_dt is null and src.column_name is not null and len(src.column_name)>0-- try to lookup column definition, so that we can use the column type id of the definition. 
 			cross apply ( 
 			 select 
 				len(src.column_name) - (len(src.column_name) -len(src.obj_name_no_prefix)) i
