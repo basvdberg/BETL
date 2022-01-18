@@ -64,7 +64,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_aw_rdw_etl2",
+						"referenceName": "pl_aw_rdw_etl",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
