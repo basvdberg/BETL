@@ -69,7 +69,11 @@
 								},
 								"dataset": {
 									"referenceName": "ds_betl",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "dbo",
+										"table_name": "Dummy"
+									}
 								}
 							}
 						},
@@ -78,7 +82,7 @@
 							"type": "Lookup",
 							"dependsOn": [
 								{
-									"activity": "generate_sql",
+									"activity": "Set transfer_id",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -96,7 +100,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "@concat( activity('generate_sql').output.firstRow._output, \n'select 0 result')",
+										"value": "@concat( variables('sql'), \n'select 0 result')",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
@@ -109,6 +113,27 @@
 										"schema_name": "dbo",
 										"table_name": "Dummy"
 									}
+								}
+							}
+						},
+						{
+							"name": "Set transfer_id",
+							"description": "start and stop transfer logic not included yet, so set to 0",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "generate_sql",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "sql",
+								"value": {
+									"value": "@replace(activity('generate_sql').output.firstRow._output, '<<_transfer_id>>', '0')",
+									"type": "Expression"
 								}
 							}
 						}
@@ -225,6 +250,9 @@
 			"template_name": {
 				"type": "String",
 				"defaultValue": "unknown"
+			},
+			"sql": {
+				"type": "String"
 			}
 		},
 		"annotations": [],
