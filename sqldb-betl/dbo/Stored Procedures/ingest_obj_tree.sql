@@ -9,8 +9,8 @@
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
-FROM Obj_tree_ms_sql_Server
-select * from @obj_tree_param 
+FROM dbo.Dummy
+--select * from @obj_tree_param 
 exec [dbo].[ingest_obj_tree] @obj_tree_param
 select * from Logging
 
@@ -376,7 +376,7 @@ begin
 			select 
 				src.ordinal_position
 				, src.column_name 
-				, src.column_type_id
+				, src.column_type_id 
 				, src.is_nullable
 				, src.data_type 
 				, case when src.data_type not in ('int', 'smallint') then src.max_len end max_len
@@ -401,7 +401,8 @@ begin
 				, src.[default_value]
 				, calc_cols.* 
 				, case 
-					when col_def.column_type_id is not null then col_def.column_type_id  -- take column type from definition if present. 
+					when col_def.column_type_id is not null then col_def.column_type_id -- use column definition if present
+				    when src.[primary_key_sorting] is not null then 100 
 					when left_side = src.obj_name -- column name starts with object name 
 						and filtered_right_side  in ( 'key', 'id', 'number', 'nr') then 100 
 					when left_side = src.obj_name_no_prefix -- column name starts with object name 
