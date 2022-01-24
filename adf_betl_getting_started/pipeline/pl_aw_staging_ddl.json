@@ -199,13 +199,21 @@
 				"inputs": [
 					{
 						"referenceName": "ds_betl",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "Dummy"
+						}
 					}
 				],
 				"outputs": [
 					{
 						"referenceName": "ds_betl",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": "dbo",
+							"table_name": "Dummy"
+						}
 					}
 				]
 			},
