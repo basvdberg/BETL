@@ -84,7 +84,7 @@
 								{
 									"activity": "Set transfer_id",
 									"dependencyConditions": [
-										"Succeeded"
+										"Completed"
 									]
 								}
 							],
