@@ -1,0 +1,139 @@
+{
+	"name": "pl_aw_staging_etl",
+	"properties": {
+		"description": "assumption: ddl is done and object tree is up to date",
+		"activities": [
+			{
+				"name": "Get staging tables",
+				"description": "just select all tables in schema staging_aw",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "-- this is the mapping for the staging layer\nselect \nsrc.obj_id src_obj_id, src.schema_name src_schema_name , src.obj_name src_obj_name \n,\no.obj_id trg_obj_id, o.schema_name trg_schema_name , o.obj_name trg_obj_name \nfrom obj_ext o\ninner join obj_ext src on o.src_obj_id = src.obj_id\nwhere \no.is_definition=0\nand o.obj_type = 'table'\nand o.db_name = 'sqldb-rdw'\n--and o.schema_name = 'staging_aw'\nand o.schema_name = 'staging_@{variables('source')}'\n",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachStagingTable",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get staging tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get staging tables').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy staging table",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "truncate table @{item().trg_schema_name}.@{item().trg_obj_name}",
+										"type": "Expression"
+									},
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_aw",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": {
+											"value": "@item().src_schema_name",
+											"type": "Expression"
+										},
+										"table_name": "@item().src_obj_name"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_rdw",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "@item().trg_schema_name",
+										"table_name": "@item().trg_obj_name"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"source": {
+				"type": "String",
+				"defaultValue": "aw"
+			},
+			"db_name": {
+				"type": "String",
+				"defaultValue": "sqldb-aw"
+			},
+			"target_schema_name": {
+				"type": "String",
+				"defaultValue": "staging-aw"
+			}
+		},
+		"folder": {
+			"name": "aw"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-07-07T15:48:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

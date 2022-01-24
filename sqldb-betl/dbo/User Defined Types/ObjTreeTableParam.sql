@@ -1,5 +1,4 @@
 ﻿CREATE TYPE [dbo].[ObjTreeTableParam] AS TABLE (
-    [src_obj_id]          INT            NULL,
     [external_obj_id]     INT            NULL,
     [server_type_id]      INT            NULL,
     [server_name]         NVARCHAR (128) NULL,
@@ -17,7 +16,11 @@
     [numeric_scale]       INT            NULL,
     [primary_key_sorting] VARCHAR (4)    NULL,
     [default_value]       [sysname]      NULL,
-    [_source]             VARCHAR (255)  NULL);
+    [_source]             VARCHAR (255)  NULL,
+    [src_obj_id]          INT            NULL,
+    [obj_def_id]          INT            NULL);
+
+
 
 
 

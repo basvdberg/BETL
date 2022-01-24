@@ -1,0 +1,79 @@
+{
+	"name": "pl_aw_rdw",
+	"properties": {
+		"activities": [
+			{
+				"name": "If environment is dev",
+				"description": "only run ddl on dev for performance reasons. On test, acc and prod ddl should not be necessary because ddl changes are done via release mechanism",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(pipeline().globalParameters.Environment, 'dev')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "pl_aw_rdw_ddl_tables",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_aw_rdw_ddl_tables",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						},
+						{
+							"name": "pl_aw_rdw_ddl_views",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "pl_aw_rdw_ddl_tables",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_aw_rdw_ddl_views",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "pl_aw_rdw",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "If environment is dev",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_aw_rdw_etl",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "aw"
+		},
+		"annotations": []
+	}
+}

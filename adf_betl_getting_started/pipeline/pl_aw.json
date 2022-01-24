@@ -3,24 +3,24 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "pl_staging",
+				"name": "pl_aw_staging",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_staging_aw",
+						"referenceName": "pl_aw_staging",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
 				}
 			},
 			{
-				"name": "pl_rdw",
+				"name": "pl_aw_rdw",
 				"type": "ExecutePipeline",
 				"dependsOn": [
 					{
-						"activity": "pl_staging",
+						"activity": "pl_aw_staging",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -29,13 +29,16 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "pl_rdw",
+						"referenceName": "pl_aw_rdw",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
 				}
 			}
 		],
+		"folder": {
+			"name": "aw"
+		},
 		"annotations": []
 	}
 }

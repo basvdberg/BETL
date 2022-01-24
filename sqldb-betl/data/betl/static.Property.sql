@@ -1,5 +1,4 @@
-﻿
---EXEC sp_generate_merge @schema = 'static', @table_name ='Property'
+﻿--EXEC sp_generate_merge @schema = 'static', @table_name ='Property'
 SET NOCOUNT ON
 
 MERGE INTO [static].[Property] AS [Target]
@@ -27,9 +26,11 @@ USING (VALUES
  ,(250,N'layer',0,N'dwh layer. e.g. staging, rdw, idw, datamart',N'db_object',NULL,NULL,NULL,1,1,NULL,'2019-12-10T18:09:12.287',N'')
  ,(260,N'source',1,N'short name for e.g. a source database. used as prefix in staging',N'db_object',NULL,1,1,1,1,1,'2020-04-03T10:53:39.070',N'')
  ,(270,N'row_filter',1,N'Use this to filter rows in development env so that everything runs faster',N'db_object',NULL,1,NULL,1,NULL,NULL,'2020-06-17T10:06:20.933',N'')
- ,(280,N'ddl_template_dev',1,N'what template (from static.template) do we use to generate this object on dev ?',N'db_object',N'drop_and_create_table',1,1,NULL,NULL,NULL,'2021-12-09T09:44:14.293',N'bas@c2h.nl')
- ,(283,N'ddl_template_tap',1,N'what template (from static.template) do we use to generate this object on test, acceptance and prod?',N'db_object',N'create_table_if_not_exists',1,1,NULL,NULL,NULL,'2021-12-09T09:38:33.350',N'bas@c2h.nl')
- ,(290,N'etl_template',1,N'what template (from static.template) do we use to fill this object with data ?',N'db_object',NULL,1,NULL,NULL,NULL,NULL,'2021-12-09T09:39:37.817',N'bas@c2h.nl')
+ ,(280,N'ddl_template_table_dev',1,N'what template (from static.template) do we use to generate this table on dev ?',N'db_object',N'drop_and_create_table',1,0,NULL,NULL,NULL,'2021-12-09T09:44:14.293',N'bas@c2h.nl')
+ ,(283,N'ddl_template_table_tap',1,N'what template (from static.template) do we use to generate this table on test, acceptance and prod?',N'db_object',N'create_table_if_not_exists',1,0,NULL,NULL,NULL,'2021-12-09T09:38:33.350',N'bas@c2h.nl')
+ ,(290,N'etl_template',1,N'what template (from static.template) do we use to fill this object with data ?',N'db_object',N'rdw_insert',1,NULL,NULL,NULL,NULL,'2021-12-09T09:39:37.817',N'bas@c2h.nl')
+ ,(300,N'ddl_template_view_dev',1,N'what template (from static.template) do we use to generate this view on dev ?',N'db_object',N'drop_and_create_latest_view',NULL,1,NULL,NULL,NULL,'2022-01-15T16:18:53.290',N'bas@c2h.nl')
+ ,(310,N'ddl_template_view_tap',1,N'what template (from static.template) do we use to generate this view on test, acceptance and prod?',N'db_object',N'drop_and_create_latest_view',NULL,1,NULL,NULL,NULL,'2022-01-15T16:18:54.693',N'bas@c2h.nl')
 ) AS [Source] ([property_id],[property_name],[enabled],[description],[property_scope],[default_value],[apply_table],[apply_view],[apply_schema],[apply_db],[apply_srv],[record_dt],[record_user])
 ON ([Target].[property_id] = [Source].[property_id])
 WHEN MATCHED AND (

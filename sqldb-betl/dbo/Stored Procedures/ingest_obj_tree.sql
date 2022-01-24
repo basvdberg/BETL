@@ -9,9 +9,10 @@
 declare @obj_tree_param ObjTreeTableParam 
 insert into @obj_tree_param 
 SELECT  *
-FROM vw_staging_obj_aw
-select * from @obj_tree_param 
+FROM dbo.Dummy
+--select * from @obj_tree_param 
 exec [dbo].[ingest_obj_tree] @obj_tree_param
+select * from Logging
 
 exec clear_meta_data
 
@@ -34,7 +35,6 @@ as
 begin 
 	 --declare @batch_id as int = -1 , @obj_tree_param ObjTreeTableParam 
 	 --insert into @obj_tree_param select * from dbo.Obj_tree_Staging
-	
 	set nocount on 
 	declare @debug as bit = 0 -- set to 1 to print debug info
 	--, @batch_id as int = -1 
@@ -60,7 +60,7 @@ begin
 
 	-- standard BETL header code... 
 	set nocount on 
-	exec dbo.log_batch @batch_id, 'Header', '?(b?)', @proc_name , @batch_id
+	exec dbo.log_batch @batch_id, 'Header', '?(b?) @is_definition=?, @detect_table_delete=?, @detect_view_delete=?, @detect_schema_delete=?, @detect_user_delete=0', @proc_name , @batch_id, @is_definition, @detect_table_delete, @detect_view_delete, @detect_schema_delete, @detect_user_delete
 	-- END standard BETL header code... 
 
 	select @rec_cnt_src = count(*) from @obj_tree_param
@@ -68,7 +68,7 @@ begin
 
 	DECLARE @C TABLE (act tinyint) -- act 1= insert , 2 = update, 3= delete , 4= undelete
 	exec dbo.start_transfer @batch_id = @batch_id output, @transfer_id=@transfer_id output, @transfer_name= @proc_name, @result_set = 0 
-	--begin try 
+	begin try 
 	--begin transaction 
 		-- begin servers 
 		IF OBJECT_ID('tempdb..#servers') IS NOT NULL
@@ -89,7 +89,6 @@ begin
 		insert into @obj_tree 
 		select distinct
 		  null obj_id
-		  , src.src_obj_id
 		  , src.external_obj_id 
 		  ,src.[server_type_id]
 		  ,src.[server_name]
@@ -112,7 +111,9 @@ begin
 		  ,default_value 
 		  ,get_prefix.prefix
 		  ,case when get_prefix.prefix is not null and len(get_prefix.prefix)>0 then substring(get_prefix.obj_name, len(get_prefix.prefix)+2, len(get_prefix.obj_name) - len(get_prefix.prefix)-1) else get_prefix.obj_name end obj_name_no_prefix
-		  , _source
+		  , src._source
+		  , src.src_obj_id
+		  , src.obj_def_id
 		from @obj_tree_param src --@obj_tree_param src
 		inner join dbo.obj s on src.server_name = s.obj_name and s.obj_type_id=50 and s.server_type_id = src.server_type_id --lookup server
 			and s.is_definition=0
@@ -167,7 +168,7 @@ begin
 		IF OBJECT_ID('tempdb..#schemas') IS NOT NULL
 			DROP TABLE #schemas
 		
-		select distinct src.schema_name, db_id parent_id, server_type_id , _source
+		select distinct src.schema_name, db_id parent_id, server_type_id 
 		into #schemas
 		from @obj_tree src
 		where src.schema_name is not null 
@@ -202,14 +203,14 @@ begin
 		update o
 		set schema_id = s.obj_id
 		from @obj_tree o
-		inner join dbo.obj s on o.schema_name = s.obj_name and s.parent_id = o.db_id and s.obj_type_id=30
+		inner join dbo.obj s on o.schema_name = s.obj_name and s.parent_id = o.db_id and s.obj_type_id=30 and is_definition = @is_definition
 		-- end schemas
 		
 
 		-- begin tables, views and users
 		MERGE into [dbo].[Obj] trg
 		USING (
-				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id
+				select distinct obj_name, obj_type_id, schema_id, server_type_id, prefix , obj_name_no_prefix, src_obj_id, external_obj_id, obj_def_id, _source
 				from @obj_tree -- where obj_name is not null --> include empty schemas 
 				where obj_type_id in ( 10,20) 
 
@@ -218,12 +219,18 @@ begin
 --		ON (isnull(src.obj_name, trg.obj_name) =  trg.obj_name and isnull(src.obj_type_id, trg.obj_type_id) = trg.obj_type_id and trg.parent_id = src.[schema_id]) and trg.obj_type_id in (10,20) 
 		WHEN MATCHED and (trg._delete_dt is not null -- marked as deleted
 							or isnull(trg.src_obj_id,-1) <>  isnull(src.src_obj_id,-1)  -- changed
-							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1))  -- changed
+							or isnull(trg.external_obj_id,-1) <>  isnull(src.external_obj_id,-1)  -- changed
+							or isnull(trg.obj_def_id,-1) <>  isnull(src.obj_def_id,-1)  -- changed
+							or isnull(trg._source,-1) <>  isnull(src._source,-1))  -- changed
+
+
 		THEN -- exists, but marked as deleted  or something changed
 			UPDATE set
 	 			_delete_dt = null -- undelete
 				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id  -- undelete
-				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled ( e.g. when observe ddppoc is called )
+				, trg.src_obj_id = isnull(src.src_obj_id , trg.src_obj_id) -- never set to null when filled 
+				, trg.obj_def_id = isnull(src.obj_def_id , trg.obj_def_id) -- never set to null when filled 
+				, trg._source	 = isnull(src._source    , trg._source) -- never set to null when filled 
 				, trg.external_obj_id = src.external_obj_id
 
 		WHEN NOT MATCHED BY SOURCE 
@@ -238,8 +245,8 @@ begin
 				, _record_dt = @now, _record_user = suser_sname(), _batch_id = @batch_id
 		WHEN NOT MATCHED AND src.obj_name is not null and src.obj_type_id is not null 
 		THEN  -- not exists but not an empty schema.. 
-			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id, is_definition) 
-			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id , @is_definition) 
+			INSERT (obj_type_id, obj_name, parent_id, server_type_id, _batch_id, prefix, obj_name_no_prefix, src_obj_id, _create_dt, external_obj_id, is_definition, obj_def_id, _source) 
+			VALUES (src.obj_type_id, src.[obj_name], [schema_id] , server_type_id, @batch_id, prefix, obj_name_no_prefix, src_obj_id, @create_dt, external_obj_id , @is_definition, obj_def_id, _source) 
 		OUTPUT 
 			CASE 
 			WHEN $action= N'INSERT' THEN 1
@@ -369,7 +376,7 @@ begin
 			select 
 				src.ordinal_position
 				, src.column_name 
-				, src.column_type_id
+				, src.column_type_id 
 				, src.is_nullable
 				, src.data_type 
 				, case when src.data_type not in ('int', 'smallint') then src.max_len end max_len
@@ -394,6 +401,8 @@ begin
 				, src.[default_value]
 				, calc_cols.* 
 				, case 
+					when col_def.column_type_id is not null then col_def.column_type_id -- use column definition if present
+				    when src.[primary_key_sorting] is not null then 100 
 					when left_side = src.obj_name -- column name starts with object name 
 						and filtered_right_side  in ( 'key', 'id', 'number', 'nr') then 100 
 					when left_side = src.obj_name_no_prefix -- column name starts with object name 
@@ -406,6 +415,7 @@ begin
 				, src.obj_id 
 			from @obj_tree src
 			left join static.[Column] static_col on static_col.column_name = src.column_name 
+			left join dbo.Col col_def on src.obj_def_id = col_def.obj_id and src.column_name = col_def.column_name and Col_def._delete_dt is null and src.column_name is not null and len(src.column_name)>0-- try to lookup column definition, so that we can use the column type id of the definition. 
 			cross apply ( 
 			 select 
 				len(src.column_name) - (len(src.column_name) -len(src.obj_name_no_prefix)) i
@@ -534,4 +544,8 @@ begin
 	exec dbo.log_batch @batch_id, 'Footer', '?(b?)', @proc_name , @batch_id
 	-- standard BETL footer code... 
 
+	end try 
+	begin catch
+		exec dbo.catch_error @batch_id, @proc_name 
+	end catch
 end

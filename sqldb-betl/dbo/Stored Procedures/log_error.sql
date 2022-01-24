@@ -24,7 +24,7 @@ BEGIN
 	print @msg
 
 	insert into dbo.Logging(log_dt, msg, batch_id,log_type_id)
-	values( getdate(), @msg, @batch_id, 50) 
+	values( getdate(), @msg, isnull(@batch_id,-1), 50) 
 
 --	exec dbo.log @batch_id, 'header', '?(?) severity ? ?', @sp_name ,@batch_id, @severity, @msg
     INSERT INTO [dbo].[Error]([error_code],[error_msg],[error_line],[error_procedure],[error_severity],[batch_id], transfer_id) 

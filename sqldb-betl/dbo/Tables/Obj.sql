@@ -4,11 +4,13 @@
     [obj_type_id]        INT            NOT NULL,
     [parent_id]          INT            NULL,
     [is_definition]      BIT            CONSTRAINT [DF_Obj_is_definition] DEFAULT ((0)) NOT NULL,
+    [src_obj_id]         INT            NULL,
+    [obj_def_id]         INT            NULL,
+    [_source]            VARCHAR (255)  NULL,
     [prefix]             NVARCHAR (50)  NULL,
     [obj_name_no_prefix] NVARCHAR (255) NULL,
     [server_type_id]     INT            NULL,
     [identifier]         INT            NULL,
-    [src_obj_id]         INT            NULL,
     [external_obj_id]    INT            NULL,
     [_create_dt]         DATETIME       CONSTRAINT [DF_Obj__create_dt] DEFAULT (getdate()) NULL,
     [_delete_dt]         DATETIME       NULL,
@@ -18,9 +20,14 @@
     CONSTRAINT [PK_Obj] PRIMARY KEY CLUSTERED ([obj_id] ASC),
     CONSTRAINT [FK_Obj_h_Obj_type] FOREIGN KEY ([obj_type_id]) REFERENCES [static].[Obj_type] ([obj_type_id]),
     CONSTRAINT [FK_Obj_h_Server_type] FOREIGN KEY ([server_type_id]) REFERENCES [static].[Server_type] ([server_type_id]),
-    CONSTRAINT [FK_Obj_Obj] FOREIGN KEY ([parent_id]) REFERENCES [dbo].[Obj] ([obj_id]),
-    CONSTRAINT [FK_Obj_src_Obj] FOREIGN KEY ([src_obj_id]) REFERENCES [dbo].[Obj] ([obj_id])
+    CONSTRAINT [FK_Obj_Obj] FOREIGN KEY ([parent_id]) REFERENCES [dbo].[Obj] ([obj_id])
 );
+
+
+
+
+
+
 
 
 
@@ -43,9 +50,19 @@ CREATE UNIQUE NONCLUSTERED INDEX [UI_Obj_h_obj_name_obj_type_parent_id]
 
 
 GO
-EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'this is the id of the originating object ( lineage)', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'src_obj_id';
+EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'reference to object that acted as source for this object (if more than 1 then see Obj_map)', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'src_obj_id';
+
+
 
 
 GO
 EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'this is the id in the database. e.g. in object_id sys.objects.', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'external_obj_id';
+
+
+GO
+
+
+
+GO
+EXECUTE sp_addextendedproperty @name = N'MS_Description', @value = N'reference to object that was used as definition for this object ( for generating the ddl)', @level0type = N'SCHEMA', @level0name = N'dbo', @level1type = N'TABLE', @level1name = N'Obj', @level2type = N'COLUMN', @level2name = N'obj_def_id';
 

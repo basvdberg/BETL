@@ -1,0 +1,157 @@
+{
+	"name": "pl_aw_rdw_ddl_views",
+	"properties": {
+		"activities": [
+			{
+				"name": "observe dwh",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_observe_dwh",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "define rdw views",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "observe dwh",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "with rdw_obj as ( \n\tSELECT \n\t\t external_obj_id -- this is an object id outside betl for this object. \n\t\t  , server_type_id \n\t\t  , server_name \n\t\t  , db_name \n\t\t  ,  schema_name \n  \t  ,  substring(obj_name, 1, len(obj_name)-2)  obj_name  -- remove last two characters namely _h\n\t  , substring(obj_name, len(obj_name)-1,2 )  suffix\n\t\t  , 20 [obj_type_id]  -- view\n\t\t  ,_source\n\t\t , o.[obj_id] src_obj_id -- the source of the latest view is this table\n\t--select * \n\tfrom dbo.obj_ext o\n\twhere \n\tobj_type = 'table'\n\tand db_name = 'sqldb-rdw'\n\tand schema_name = 'rdw'\n\tand o._delete_dt is null \n\tand o.is_definition=0\n\tand substring(obj_name, len(obj_name)-1,2 )  = '_h'\n)\n\nSELECT \n\t o.external_obj_id -- this is an object id outside betl for this object. \n\t  , o.server_type_id \n\t  , o.server_name \n\t  , o.db_name \n      , o.schema_name \n\t  , o.obj_name\n\t  , o.[obj_type_id] \n      ,c.ordinal_position -- stays the same\n      ,c.column_name\n      ,c.column_type_id\n      ,c.is_nullable\n      ,c.data_type\n      ,c.max_len\n      ,c.numeric_precision\n      ,c.numeric_scale\n      , null primary_key_sorting -- redefine prim-key\n      ,null default_value -- just copy contents. Do not use source system defaults. \n      ,o._source\n\t , o.src_obj_id -- this is the betl internal reference to the main object/table that acted as a source for this object\n      , null obj_def_id\n\nfrom rdw_obj o\ninner join dbo.col c on c.obj_id= o.src_obj_id\nwhere \nc._delete_dt is null\nand c.is_definition =0\n",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"sqlWriterStoredProcedureName": "[dbo].[ingest_obj_tree]",
+						"sqlWriterTableType": "ObjTreeTableParam",
+						"storedProcedureTableTypeParameterName": "obj_tree_param",
+						"storedProcedureParameters": {
+							"batch_id": {
+								"type": "Int32",
+								"value": "0"
+							},
+							"detect_schema_delete": {
+								"type": "Boolean",
+								"value": "false"
+							},
+							"detect_table_delete": {
+								"type": "Boolean",
+								"value": "true"
+							},
+							"detect_user_delete": {
+								"type": "Boolean",
+								"value": "false"
+							},
+							"detect_view_delete": {
+								"type": "Boolean",
+								"value": "false"
+							},
+							"is_definition": {
+								"type": "Boolean",
+								"value": "true"
+							}
+						},
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": true
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_betl",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Materialize rdw views",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "define rdw views",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_generate_and_exec_sql",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"source": "aw",
+						"schema_name": "rdw",
+						"template_type": "ddl",
+						"obj_type": "view"
+					}
+				}
+			},
+			{
+				"name": "observe rdw tables",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Materialize rdw views",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "pl_observe_dwh",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "aw"
+		},
+		"annotations": [],
+		"lastPublishTime": "2021-07-07T15:48:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

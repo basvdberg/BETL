@@ -83,6 +83,7 @@ begin
 
 				-- standard BETL header code... 
 	set nocount on 
+	begin try
 	exec dbo.log @batch_id, 'HEADER', '? obj_id=?, @template_name=?, batch_id=?,@output_result=?', @proc_name , @obj_id, @template_name, @batch_id,@output_result 
 	-- END standard BETL header code... 
 
@@ -144,7 +145,7 @@ begin
 		goto footer
 	end
 
-	exec log @batch_id, 'INFO', 'begin generating abstract syntax tree '
+	exec log @batch_id, 'STEP', 'begin generating abstract syntax tree '
 	-- BEGIN parse the handle bars expressions into an abstract syntax tree ( ast) 
 	if object_id('tempdb..#ast') is not null 
 		drop table #ast
@@ -281,7 +282,7 @@ begin
 	set @node = @parent.GetDescendant(@node, NULL)
 	
 	insert into #ast(node,s, type)  values ( @node,  @value,  'const') 
-	exec log @batch_id, 'INFO', 'done generating abstract syntax tree '
+	exec log @batch_id, 'STEP', 'done generating abstract syntax tree '
 
 	-- END parse the handle bars expressions into an abstract syntax tree ( ast) 
 	
@@ -474,6 +475,10 @@ begin
 	exec dbo.log @batch_id, 'FOOTER', '?(t?)', @proc_name , @batch_id
 	-- END standard BETL footer code... 
 
+	end try 
+	begin catch
+		exec dbo.catch_error @batch_id, @proc_name 
+	end catch
 
 
 end
