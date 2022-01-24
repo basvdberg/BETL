@@ -27,35 +27,7 @@
 					},
 					"sink": {
 						"type": "AzureSqlSink",
-						"sqlWriterStoredProcedureName": "[dbo].[ingest_obj_tree]",
-						"sqlWriterTableType": "ObjTreeTableParam",
-						"storedProcedureTableTypeParameterName": "obj_tree_param",
-						"storedProcedureParameters": {
-							"batch_id": {
-								"type": "Int32",
-								"value": null
-							},
-							"detect_schema_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"detect_table_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"detect_user_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"detect_view_delete": {
-								"type": "Boolean",
-								"value": null
-							},
-							"is_definition": {
-								"type": "Boolean",
-								"value": "false"
-							}
-						},
+						"tableOption": "autoCreate",
 						"disableMetricsCollection": false
 					},
 					"enableStaging": false,
