@@ -4,7 +4,7 @@
 		"globalParameters": {
 			"Environment": {
 				"type": "String",
-				"value": "test"
+				"value": "dev"
 			}
 		}
 	},
